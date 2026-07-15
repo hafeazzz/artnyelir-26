@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARTNYELIR '26 — Pesta 17an Komplek</title>
+<meta name="description" content="ARTNYELIR — perayaan 17 Agustus komplek. Lihat keseruan tahun lalu & daftar lomba untuk anak-anak dan dewasa." />
+
+<!-- Fonts: Anton (display, vibes spanduk), Plus Jakarta Sans (body), Caveat (caption foto) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   ARTNYELIR '26 — token desain
+   Bahasa 3D: bendera berkibar (signature) + hard offset shadow
+   (efek "extruded" ala poster) di tombol, kartu & slab.
+   ============================================================ */
+:root{
+  --merah:      #CE1126;   /* merah bendera */
+  --merah-2:    #E7293B;   /* highlight merah */
+  --merah-tua:  #8F0C1C;   /* bayangan / extrusion */
+  --blush:      #FFF2F0;   /* seksi galeri (tint merah sangat muda) */
+  --blush-2:    #F2D5D1;   /* hard-shadow di atas blush */
+  --putih:      #FFFFFF;
+  --kertas:     #FBFAF8;   /* latar utama */
+  --tinta:      #1C1114;   /* teks gelap */
+  --abu:        #7A6C70;
+  --garis:      #E6DADC;
+
+  --f-display: 'Anton', 'Arial Narrow', sans-serif;
+  --f-body:    'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-tulis:   'Caveat', cursive;
+
+  --r-card: 18px;
+  --r-chip: 999px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+
+body{
+  font-family:var(--f-body);
+  color:var(--tinta);
+  background:var(--kertas);
+  border-top:6px solid var(--merah);   /* garis bendera di puncak halaman */
+  line-height:1.65;
+  overflow-x:hidden;
+}
+
+::selection{ background:var(--merah); color:var(--putih); }
+
+a{ color:inherit; }
+img{ max-width:100%; display:block; }
+
+:focus-visible{
+  outline:3px solid var(--merah);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+/* ---------- util ---------- */
+.wrap{ width:min(1140px, 92vw); margin-inline:auto; }
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:.55rem;
+  font-size:.78rem; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--merah);
+}
+.mini-flag{
+  width:20px; height:14px; border-radius:3px; flex:none;
+  background:linear-gradient(to bottom, var(--merah) 0 50%, var(--putih) 50% 100%);
+  box-shadow:0 0 0 1.5px var(--tinta);
+}
+
+.h2{
+  font-family:var(--f-display);
+  font-size:clamp(2.2rem, 5.4vw, 3.6rem);
+  line-height:1.02; letter-spacing:.01em;
+  text-transform:uppercase;
+}
+.sub{ color:var(--abu); max-width:56ch; margin-top:.7rem; }
+
+/* tombol bergaya slab 3D */
+.btn{
+  display:inline-flex; align-items:center; gap:.5rem;
+  font-weight:800; font-size:.95rem; text-decoration:none;
+  padding:.85rem 1.5rem; border-radius:14px; border:none; cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
+}
+.btn-primary{
+  background:var(--merah); color:var(--putih);
+  box-shadow:7px 7px 0 var(--merah-tua);
+}
+.btn-primary:hover{ background:var(--merah-2); }
+.btn-primary:active{ transform:translate(7px,7px); box-shadow:0 0 0 var(--merah-tua); }
+.btn-ghost{
+  background:var(--putih); color:var(--tinta);
+  box-shadow:inset 0 0 0 1.5px var(--tinta), 7px 7px 0 var(--blush-2);
+}
+.btn-ghost:hover{ box-shadow:inset 0 0 0 1.5px var(--merah), 7px 7px 0 var(--blush-2); color:var(--merah); }
+.btn-ghost:active{ transform:translate(7px,7px); box-shadow:inset 0 0 0 1.5px var(--merah), 0 0 0 var(--blush-2); }
+
+/* reveal saat scroll */
+.reveal{ opacity:0; transform:translateY(26px); transition:opacity .6s ease var(--d,0s), transform .6s ease var(--d,0s); }
+.reveal.in{ opacity:1; transform:none; }
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:rgba(251,250,248,.86);
+  backdrop-filter:blur(10px);
+  border-bottom:1.5px solid var(--garis);
+}
+.nav-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.8rem 0;
+}
+.brand{
+  display:inline-flex; align-items:center; gap:.6rem; text-decoration:none;
+  font-family:var(--f-display); font-size:1.15rem; letter-spacing:.03em;
+  color:var(--merah); text-transform:uppercase;
+}
+.nav-links{ display:flex; align-items:center; gap:1.4rem; }
+.nav-links a{ text-decoration:none; font-weight:700; font-size:.9rem; color:var(--tinta); }
+.nav-links a:hover{ color:var(--merah); }
+.nav-links .btn{ padding:.55rem 1.1rem; box-shadow:4px 4px 0 var(--merah-tua); font-size:.85rem; }
+.nav-links .btn:active{ transform:translate(4px,4px); box-shadow:0 0 0 var(--merah-tua); }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{ padding:clamp(3rem,7vw,5.5rem) 0 clamp(3rem,6vw,5rem); }
+.hero-inner{
+  display:grid; grid-template-columns:1.15fr .85fr;
+  gap:clamp(2rem,5vw,4rem); align-items:center;
+}
+
+.hero-title{
+  position:relative; display:inline-block;
+  font-family:var(--f-display);
+  font-size:clamp(3.4rem, 11vw, 8.2rem);
+  line-height:.98; letter-spacing:.01em;
+  text-transform:uppercase; color:var(--merah);
+  margin:.6rem 0 1rem;
+}
+/* duplikat outline di belakang = judul terasa "dicetak" 3D */
+.hero-title .ht-ghost{
+  position:absolute; left:.09em; top:.09em; z-index:-1;
+  color:transparent;
+  -webkit-text-stroke:2px var(--tinta);
+  opacity:.9;
+}
+.hero-sub{ color:var(--abu); font-size:1.06rem; max-width:46ch; }
+.hero-cta{ display:flex; flex-wrap:wrap; gap:1rem; margin-top:1.6rem; }
+
+/* countdown */
+.countdown{ margin-top:2rem; }
+.cd-row{ display:flex; gap:.7rem; flex-wrap:wrap; }
+.cd-box{
+  background:var(--putih); border-radius:14px;
+  min-width:74px; padding:.6rem .4rem .5rem; text-align:center;
+  box-shadow:6px 6px 0 var(--blush-2), inset 0 0 0 1.5px var(--garis);
+}
+.cd-box b{
+  display:block; font-family:var(--f-display);
+  font-size:1.9rem; line-height:1; color:var(--tinta);
+}
+.cd-box span{
+  font-size:.66rem; font-weight:800; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--abu);
+}
+.cd-label{ margin-top:.7rem; font-size:.86rem; color:var(--abu); }
+.cd-label strong{ color:var(--merah); }
+
+/* ---------- panggung 3D ---------- */
+.hero-stage{
+  perspective:1000px;
+  display:flex; justify-content:center;
+  min-height:380px;
+}
+.bob{ animation:bob 5.5s ease-in-out infinite; }
+@keyframes bob{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-14px); }
+}
+.rig{
+  position:relative; width:340px; height:380px;
+  transform-style:preserve-3d;
+  transform:rotateX(calc(7deg + var(--my,0deg))) rotateY(calc(-16deg + var(--mx,0deg)));
+  transition:transform .25s ease-out;
+}
+
+/* bendera berkibar — signature */
+.flag-wrap{ position:absolute; left:28px; top:34px; transform-style:preserve-3d; }
+.pole{
+  position:absolute; left:-9px; top:-14px;
+  width:8px; height:302px; border-radius:6px;
+  background:linear-gradient(to right, #33232a, var(--tinta) 55%, #4a353c);
+}
+.pole::before{
+  content:""; position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+  width:16px; height:16px; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, var(--merah-2), var(--merah-tua));
+}
+.flag{ display:flex; }
+.strip{
+  width:13px; height:196px; margin-left:-1px; flex:none;
+  transform-origin:top center;
+  animation:wave 2.3s ease-in-out infinite;
+  animation-delay:calc(var(--i) * -0.11s);
+  position:relative;
+}
+.strip::before{
+  content:""; position:absolute; inset:0 0 50% 0;
+  background:linear-gradient(to right, var(--merah), var(--merah-2));
+}
+.strip::after{
+  content:""; position:absolute; inset:50% 0 0 0;
+  background:linear-gradient(to right, #FFFFFF, #F3EDEE);
+}
+@keyframes wave{
+  0%,100%{ transform:translateY(0) skewY(4.5deg);  filter:brightness(1); }
+  50%    { transform:translateY(9px) skewY(-4.5deg); filter:brightness(.88); }
+}
+.flag-shadow{
+  position:absolute; left:-10px; bottom:-72px;
+  width:290px; height:30px; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(28,17,20,.20), transparent 70%);
+  filter:blur(2px);
+}
+
+/* slab dekoratif mengambang */
+.slab{
+  position:absolute; border-radius:16px;
+  animation:floaty 6s ease-in-out infinite;
+}
+@keyframes floaty{
+  0%,100%{ transform:translateY(0) rotate(var(--rot,0deg)); }
+  50%{ transform:translateY(-10px) rotate(var(--rot,0deg)); }
+}
+.slab-17{
+  --rot:-5deg;
+  right:-4px; top:-16px;
+  width:88px; height:88px;
+  background:var(--putih);
+  box-shadow:9px 9px 0 var(--merah), inset 0 0 0 1.5px var(--tinta);
+  display:grid; place-items:center;
+  font-family:var(--f-display); font-size:2.7rem; color:var(--merah);
+}
+.slab-red{
+  --rot:10deg;
+  left:-26px; bottom:38px;
+  width:56px; height:56px;
+  background:var(--merah);
+  box-shadow:8px 8px 0 var(--merah-tua);
+  animation-delay:-2.2s;
+}
+.slab-pill{
+  --rot:4deg;
+  right:8px; bottom:-4px;
+  padding:.45rem .95rem; border-radius:999px;
+  background:var(--putih);
+  box-shadow:inset 0 0 0 1.5px var(--tinta), 6px 6px 0 var(--blush-2);
+  font-family:var(--f-display); font-size:1rem; color:var(--merah);
+  letter-spacing:.06em;
+  animation-delay:-3.6s;
+}
+
+/* ============================================================
+   TICKER
+   ============================================================ */
+.ticker{
+  background:var(--merah);
+  border-block:3px solid var(--tinta);
+  overflow:hidden; padding:.65rem 0;
+}
+.ticker-track{
+  display:flex; gap:2.4rem; width:max-content;
+  animation:scroll 22s linear infinite;
+}
+.ticker:hover .ticker-track{ animation-play-state:paused; }
+.ticker-track span{
+  font-family:var(--f-display); text-transform:uppercase;
+  color:var(--putih); font-size:1.25rem; letter-spacing:.08em;
+  white-space:nowrap;
+}
+.ticker-track b{ color:#FFD9DD; font-weight:400; margin-left:2.4rem; }
+@keyframes scroll{ to{ transform:translateX(-50%); } }
+
+/* ============================================================
+   GALERI
+   ============================================================ */
+.galeri{ background:var(--blush); padding:clamp(3.5rem,7vw,5.5rem) 0; }
+.sec-head{ margin-bottom:2.4rem; }
+
+.polar-grid{
+  display:grid; grid-template-columns:repeat(4, 1fr);
+  gap:clamp(1.2rem, 2.5vw, 1.8rem);
+}
+.polaroid{
+  background:var(--putih);
+  padding:10px 10px 12px;
+  border-radius:8px;
+  box-shadow:9px 9px 0 var(--blush-2);
+  position:relative;
+  transform:rotate(var(--tilt,0deg));
+  transition:transform .18s ease, box-shadow .18s ease;
+  will-change:transform;
+}
+.polaroid:nth-child(odd){  --tilt:-1.6deg; }
+.polaroid:nth-child(even){ --tilt: 1.4deg; }
+.polaroid:hover{ box-shadow:12px 14px 0 var(--blush-2); z-index:2; }
+
+.tape{
+  position:absolute; top:-11px; left:50%;
+  width:84px; height:24px;
+  transform:translateX(-50%) rotate(-3deg);
+  background:rgba(255,255,255,.55);
+  border:1px dashed rgba(206,17,38,.35);
+  border-radius:2px;
+  backdrop-filter:blur(1px);
+}
+
+.photo{
+  aspect-ratio:1/1;
+  border-radius:5px;
+  overflow:hidden;
+  position:relative;
+  display:grid; place-items:center;
+  background:var(--ph-bg, linear-gradient(160deg, #F6C3BD, var(--merah)));
+}
+/* pola halftone tipis biar placeholder terasa didesain */
+.photo::before{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.35) 1.2px, transparent 1.3px);
+  background-size:14px 14px;
+  mix-blend-mode:soft-light;
+}
+/* GANTI FOTO ASLI:
+   Hapus <span class="ph-emoji"> di dalam .photo lalu isi dengan
+   <img src="foto-kalian.jpg" alt="deskripsi foto"> — style-nya sudah siap. */
+.photo img{ width:100%; height:100%; object-fit:cover; }
+.ph-emoji{
+  font-size:3.6rem;
+  filter:drop-shadow(0 8px 10px rgba(28,17,20,.28));
+  transform:translateZ(30px);
+}
+.ph-year{
+  position:absolute; left:8px; bottom:8px;
+  background:var(--putih); color:var(--merah);
+  font-size:.62rem; font-weight:800; letter-spacing:.1em;
+  padding:.2rem .5rem; border-radius:999px;
+}
+.polaroid figcaption{
+  font-family:var(--f-tulis); font-size:1.18rem;
+  color:var(--tinta); text-align:center;
+  padding-top:.55rem; line-height:1.2;
+}
+
+.galeri-note{
+  margin-top:2.2rem; text-align:center;
+  font-size:.88rem; color:var(--abu);
+}
+
+/* ============================================================
+   PENDAFTARAN
+   ============================================================ */
+.daftar{ padding:clamp(3.5rem,7vw,5.5rem) 0; }
+.daftar-grid{
+  display:grid; grid-template-columns:1.35fr .85fr;
+  gap:clamp(1.6rem, 3.5vw, 2.6rem);
+  align-items:start;
+  margin-top:2.4rem;
+}
+
+.card{
+  background:var(--putih);
+  border-radius:var(--r-card);
+  box-shadow:inset 0 0 0 1.5px var(--tinta), 12px 12px 0 var(--blush-2);
+  padding:clamp(1.4rem, 3vw, 2.2rem);
+}
+
+.field{ margin-bottom:1.2rem; }
+.field label, fieldset legend{
+  display:block; font-size:.74rem; font-weight:800;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta); margin-bottom:.5rem;
+}
+.field input{
+  width:100%; padding:.85rem 1rem;
+  border:1.5px solid var(--garis); border-radius:12px;
+  font:inherit; font-weight:500; background:var(--kertas);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.field input:focus{
+  outline:none; border-color:var(--merah);
+  box-shadow:0 0 0 3px rgba(206,17,38,.16);
+}
+.row-2{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+
+fieldset{ border:none; margin-bottom:1.2rem; }
+
+/* pill kategori */
+.pills{ display:flex; flex-wrap:wrap; gap:.6rem; }
+.pill input{ position:absolute; opacity:0; pointer-events:none; }
+.pill span{
+  display:inline-block; cursor:pointer;
+  padding:.55rem 1.05rem; border-radius:var(--r-chip);
+  font-size:.88rem; font-weight:700;
+  background:var(--putih);
+  box-shadow:inset 0 0 0 1.5px var(--tinta), 4px 4px 0 var(--blush-2);
+  transition:all .13s ease;
+  user-select:none;
+}
+.pill:hover span{ color:var(--merah); box-shadow:inset 0 0 0 1.5px var(--merah), 4px 4px 0 var(--blush-2); }
+.pill input:checked + span{
+  background:var(--merah); color:var(--putih);
+  box-shadow:inset 0 0 0 1.5px var(--merah-tua), 2px 2px 0 var(--merah-tua);
+  transform:translate(2px,2px);
+}
+.pill input:focus-visible + span{ outline:3px solid var(--merah); outline-offset:3px; }
+
+/* chip lomba (multi-pilih) */
+.chips{ display:flex; flex-wrap:wrap; gap:.6rem; min-height:44px; }
+.chip input{ position:absolute; opacity:0; pointer-events:none; }
+.chip span{
+  display:inline-flex; align-items:center; gap:.4rem; cursor:pointer;
+  padding:.55rem 1rem; border-radius:12px;
+  font-size:.88rem; font-weight:600;
+  background:var(--kertas);
+  box-shadow:inset 0 0 0 1.5px var(--garis);
+  transition:all .13s ease; user-select:none;
+}
+.chip span::before{ content:"+"; font-weight:800; color:var(--merah); }
+.chip:hover span{ box-shadow:inset 0 0 0 1.5px var(--merah); }
+.chip input:checked + span{
+  background:var(--tinta); color:var(--putih);
+  box-shadow:inset 0 0 0 1.5px var(--tinta), 2px 2px 0 var(--blush-2);
+}
+.chip input:checked + span::before{ content:"✓"; color:#FF97A1; }
+.chip input:focus-visible + span{ outline:3px solid var(--merah); outline-offset:3px; }
+
+.hint{ font-size:.85rem; color:var(--abu); }
+.usia-note{ font-size:.8rem; color:var(--abu); margin:-.4rem 0 1.3rem; }
+.usia-note b{ color:var(--merah); }
+
+.btn-submit{ width:100%; justify-content:center; font-size:1.05rem; padding:1rem; }
+
+.form-error{
+  display:none; margin-bottom:1rem;
+  background:#FFE8EA; border:1.5px solid var(--merah);
+  color:var(--merah-tua); font-size:.88rem; font-weight:600;
+  padding:.7rem 1rem; border-radius:12px;
+}
+.form-error.show{ display:block; }
+
+/* panel sukses */
+.sukses{ display:none; text-align:center; padding:1rem 0; }
+.sukses.show{ display:block; }
+.sukses-check{
+  width:74px; height:74px; margin:0 auto 1.2rem;
+  border-radius:50%; background:var(--merah); color:var(--putih);
+  display:grid; place-items:center;
+  font-size:2.2rem; font-weight:800;
+  box-shadow:6px 6px 0 var(--merah-tua);
+}
+.sukses h3{
+  font-family:var(--f-display); font-size:1.9rem;
+  text-transform:uppercase; letter-spacing:.02em;
+}
+.sukses-detail{
+  margin:1.2rem auto 1.6rem; max-width:420px; text-align:left;
+  background:var(--kertas); border-radius:14px;
+  padding:1rem 1.2rem; font-size:.92rem;
+  box-shadow:inset 0 0 0 1.5px var(--garis);
+}
+.sukses-detail div{ display:flex; justify-content:space-between; gap:1rem; padding:.25rem 0; }
+.sukses-detail dt{ color:var(--abu); font-weight:600; flex:none; }
+.sukses-detail dd{ font-weight:700; text-align:right; }
+.sukses-cta{ display:flex; flex-wrap:wrap; gap:.9rem; justify-content:center; }
+
+/* papan pendaftar */
+.board{
+  background:var(--merah);
+  border-radius:var(--r-card);
+  box-shadow:12px 12px 0 var(--merah-tua);
+  padding:clamp(1.4rem, 3vw, 2rem);
+  color:var(--putih);
+  position:sticky; top:90px;
+}
+.board-num{
+  font-family:var(--f-display);
+  font-size:clamp(3rem, 6vw, 4.4rem); line-height:1;
+}
+.board-label{
+  font-size:.78rem; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color:#FFC9CF; margin-bottom:1.4rem;
+}
+.board-list{ list-style:none; display:grid; gap:.7rem; }
+.board-list li{
+  display:flex; align-items:center; gap:.75rem;
+  background:rgba(255,255,255,.1);
+  border-radius:12px; padding:.6rem .8rem;
+  animation:pop .3s ease;
+}
+@keyframes pop{ from{ opacity:0; transform:scale(.94); } }
+.avatar{
+  width:36px; height:36px; flex:none; border-radius:50%;
+  background:var(--putih); color:var(--merah);
+  display:grid; place-items:center;
+  font-family:var(--f-display); font-size:1.05rem;
+}
+.board-list .nm{ font-weight:800; font-size:.92rem; line-height:1.25; }
+.board-list .mt{ font-size:.74rem; color:#FFD3D8; }
+.board-empty{
+  background:rgba(255,255,255,.1); border-radius:12px;
+  padding:1.1rem; font-size:.9rem; color:#FFE1E4; text-align:center;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{
+  background:var(--merah); color:var(--putih);
+  margin-top:clamp(3rem,6vw,5rem);
+  padding:clamp(2.6rem,5vw,4rem) 0 0;
+  border-top:3px solid var(--tinta);
+}
+.footer-merdeka{
+  font-family:var(--f-display);
+  font-size:clamp(3.4rem, 12vw, 9rem);
+  line-height:1; text-align:center; text-transform:uppercase;
+  color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,.85);
+  user-select:none;
+}
+.footer-grid{
+  display:flex; flex-wrap:wrap; justify-content:space-between; gap:1.6rem;
+  padding:2.4rem 0 2rem;
+  font-size:.92rem;
+}
+.footer-grid b{ display:block; font-size:1rem; margin-bottom:.3rem; }
+.footer a{ color:#FFD3D8; font-weight:700; }
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.25);
+  padding:1rem 0 1.4rem;
+  font-size:.8rem; color:#FFC9CF;
+  display:flex; flex-wrap:wrap; gap:.6rem; justify-content:space-between;
+}
+.footer-flagline{ height:8px; background:var(--putih); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 980px){
+  .hero-inner{ grid-template-columns:1fr; }
+  .hero-stage{ order:-1; min-height:300px; transform:scale(.85); margin:-1rem 0 -2rem; }
+  .polar-grid{ grid-template-columns:repeat(2, 1fr); }
+  .daftar-grid{ grid-template-columns:1fr; }
+  .board{ position:static; }
+}
+@media (max-width: 560px){
+  .nav-links a:not(.btn){ display:none; }
+  .polar-grid{ grid-template-columns:1fr; }
+  .row-2{ grid-template-columns:1fr; }
+  .hero-stage{ transform:scale(.72); margin:-2.4rem 0 -3.4rem; }
+  .cd-box{ min-width:64px; }
+}
+
+/* hormati preferensi kurangi gerakan */
+@media (prefers-reduced-motion: reduce){
+  .strip, .slab, .bob, .ticker-track{ animation:none !important; }
+  .reveal{ opacity:1; transform:none; transition:none; }
+  html{ scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#beranda"><span class="mini-flag"></span> Artnyelir</a>
+    <div class="nav-links">
+      <a href="#galeri">Galeri '25</a>
+      <a href="#daftar">Lomba</a>
+      <a class="btn btn-primary" href="#daftar">Daftar</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="beranda">
+  <div class="wrap hero-inner">
+
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="mini-flag"></span> Pesta Rakyat Komplek · HUT RI ke-81</p>
+
+      <h1 class="hero-title">
+        <span class="ht-main">Artnyelir</span>
+        <span class="ht-ghost" aria-hidden="true">Artnyelir</span>
+      </h1>
+
+      <p class="hero-sub">
+        Tujuh belasan bareng tetangga — lomba seru dari balita sampai
+        bapak-ibu, ketawa bareng sampai sore. Merdeka! 🇮🇩
+      </p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#daftar">Daftar Lomba →</a>
+        <a class="btn btn-ghost" href="#galeri">Lihat Keseruan 2025</a>
+      </div>
+
+      <div class="countdown" role="timer" aria-label="Hitung mundur menuju 17 Agustus 2026">
+        <div class="cd-row">
+          <div class="cd-box"><b id="cd-hari">--</b><span>Hari</span></div>
+          <div class="cd-box"><b id="cd-jam">--</b><span>Jam</span></div>
+          <div class="cd-box"><b id="cd-menit">--</b><span>Menit</span></div>
+          <div class="cd-box"><b id="cd-detik">--</b><span>Detik</span></div>
+        </div>
+        <p class="cd-label" id="cd-label">menuju <strong>17 Agustus 2026</strong></p>
+      </div>
+    </div>
+
+    <!-- panggung 3D: bendera berkibar + slab mengambang -->
+    <div class="hero-stage" aria-hidden="true">
+      <div class="bob">
+        <div class="rig" id="rig">
+          <div class="slab slab-17">17</div>
+          <div class="slab slab-red"></div>
+          <div class="slab slab-pill">★ HUT 81</div>
+          <div class="flag-wrap">
+            <div class="pole"></div>
+            <div class="flag" id="flag"></div>
+            <div class="flag-shadow"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= TICKER ================= -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker-track">
+    <span>Balap Karung <b>★</b> Makan Kerupuk <b>★</b> Panjat Pinang <b>★</b> Tarik Tambang <b>★</b> Joget Balon <b>★</b> Lomba Mewarnai <b>★</b> Merdeka! <b>★</b></span>
+    <span>Balap Karung <b>★</b> Makan Kerupuk <b>★</b> Panjat Pinang <b>★</b> Tarik Tambang <b>★</b> Joget Balon <b>★</b> Lomba Mewarnai <b>★</b> Merdeka! <b>★</b></span>
+  </div>
+</div>
+
+<!-- ================= GALERI ================= -->
+<section class="galeri" id="galeri">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="mini-flag"></span> Dokumentasi · Agustus 2025</p>
+      <h2 class="h2">Keseruan Tahun Lalu</h2>
+      <p class="sub">Sebelum ikutan tahun ini, intip dulu rame-nya Artnyelir 2025 kemarin.</p>
+    </div>
+
+    <!-- GANTI FOTO ASLI:
+         Di setiap .photo, hapus <span class="ph-emoji">…</span>
+         lalu ganti dengan <img src="nama-foto.jpg" alt="deskripsi foto">.
+         Biarkan <span class="ph-year"> kalau mau tetap ada label tahunnya. -->
+    <div class="polar-grid">
+
+      <figure class="polaroid reveal" style="--d:.0s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#CE1126)" role="img" aria-label="Foto lomba panjat pinang tahun 2025">
+          <span class="ph-emoji">🌴</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>panjat pinang — puncak acara!</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.05s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#E7293B)" role="img" aria-label="Foto lomba balap karung tahun 2025">
+          <span class="ph-emoji">🏃</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>balap karung anak-anak</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.1s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#CE1126,#8F0C1C)" role="img" aria-label="Foto lomba makan kerupuk tahun 2025">
+          <span class="ph-emoji">🍘</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>makan kerupuk, susah tapi seru</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.15s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#E7293B)" role="img" aria-label="Foto lomba tarik tambang tahun 2025">
+          <span class="ph-emoji">🪢</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>tarik tambang antar-blok</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.0s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#CE1126)" role="img" aria-label="Foto lomba mewarnai anak tahun 2025">
+          <span class="ph-emoji">🖍️</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>lomba mewarnai si kecil</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.05s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#E7293B,#8F0C1C)" role="img" aria-label="Foto lomba joget balon tahun 2025">
+          <span class="ph-emoji">🎈</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>joget balon bapak-ibu 😂</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.1s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#CE1126)" role="img" aria-label="Foto lomba kelereng sendok tahun 2025">
+          <span class="ph-emoji">🥄</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>kelereng sendok, fokus penuh</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.15s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#E7293B)" role="img" aria-label="Foto fashion show balita tahun 2025">
+          <span class="ph-emoji">👶</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>fashion show balita gemes</figcaption>
+      </figure>
+
+    </div>
+
+    <p class="galeri-note">📸 Punya foto Artnyelir 2025? Kirim ke panitia biar dipajang di sini!</p>
+  </div>
+</section>
+
+<!-- ================= PENDAFTARAN ================= -->
+<section class="daftar" id="daftar">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="mini-flag"></span> Pendaftaran Dibuka</p>
+      <h2 class="h2">Daftar Lomba 2026</h2>
+      <p class="sub">Gratis untuk semua warga komplek. Pilih kategori umur, centang lombanya, langsung amankan slot!</p>
+    </div>
+
+    <div class="daftar-grid">
+
+      <!-- ---------- FORM ---------- -->
+      <div class="card">
+
+        <form id="form-lomba" novalidate>
+          <div class="form-error" id="form-error" role="alert"></div>
+
+          <div class="field">
+            <label for="in-nama">Nama Lengkap Peserta</label>
+            <input id="in-nama" name="nama" type="text" placeholder="cth: Budi Santoso" autocomplete="name" required />
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label for="in-wa">No. WhatsApp Ortu / Peserta</label>
+              <input id="in-wa" name="wa" type="tel" placeholder="08xx xxxx xxxx" autocomplete="tel" required />
+            </div>
+            <div class="field">
+              <label for="in-blok">Blok / No. Rumah</label>
+              <input id="in-blok" name="blok" type="text" placeholder="cth: B7 No. 12" />
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Kategori Umur</legend>
+            <div class="pills" id="pills-kategori">
+              <label class="pill"><input type="radio" name="kategori" value="anak-1-3" /><span>Anak 1–3 th</span></label>
+              <label class="pill"><input type="radio" name="kategori" value="anak-3-5" /><span>Anak 3–5 th</span></label>
+              <label class="pill"><input type="radio" name="kategori" value="anak-5-10" checked /><span>Anak 5–10 th</span></label>
+              <label class="pill"><input type="radio" name="kategori" value="anak-10-15" /><span>Anak 10–15 th</span></label>
+              <label class="pill"><input type="radio" name="kategori" value="dewasa" /><span>Dewasa (16+)</span></label>
+            </div>
+          </fieldset>
+          <p class="usia-note">* Usia dihitung per <b>17 Agustus 2026</b>. Boleh ikut lebih dari satu lomba!</p>
+
+          <fieldset>
+            <legend>Pilih Lomba</legend>
+            <div class="chips" id="chips-lomba"><!-- diisi via JS sesuai kategori --></div>
+          </fieldset>
+
+          <button class="btn btn-primary btn-submit" type="submit">Daftar Sekarang 🎉</button>
+        </form>
+
+        <!-- panel sukses -->
+        <div class="sukses" id="sukses" aria-live="polite">
+          <div class="sukses-check">✓</div>
+          <h3>Berhasil Terdaftar!</h3>
+          <p class="hint">Sampai jumpa di lapangan tanggal 17 Agustus ya 🙌</p>
+          <dl class="sukses-detail" id="sukses-detail"></dl>
+          <div class="sukses-cta">
+            <a class="btn btn-primary" id="btn-wa" href="#" target="_blank" rel="noopener">Konfirmasi ke WA Panitia</a>
+            <button class="btn btn-ghost" id="btn-lagi" type="button">Daftarkan Peserta Lain</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ---------- PAPAN PENDAFTAR ---------- -->
+      <aside class="board">
+        <div class="board-num" id="board-num">0</div>
+        <div class="board-label">warga sudah daftar</div>
+        <ul class="board-list" id="board-list">
+          <li class="board-empty" id="board-empty">Belum ada pendaftar — jadilah yang pertama! 🚩</li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-merdeka" aria-hidden="true">Merdeka!</div>
+    <div class="footer-grid">
+      <div>
+        <b>ARTNYELIR '26</b>
+        Pesta 17 Agustus warga komplek.<br />
+        Dirgahayu Republik Indonesia ke-81 🇮🇩
+      </div>
+      <div>
+        <b>Lokasi &amp; Waktu</b>
+        Lapangan komplek · 17 Agustus 2026<br />
+        Mulai pukul 07.00 WIB sampai selesai
+      </div>
+      <div>
+        <b>Kontak Panitia</b>
+        <!-- GANTI nomor WA panitia di sini & di variabel WA_PANITIA (bagian script) -->
+        <a href="https://wa.me/6281234567890" target="_blank" rel="noopener">0812-3456-7890 (WhatsApp)</a><br />
+        Pendaftaran ditutup 15 Agustus 2026
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Panitia Artnyelir</span>
+      <span>Dibuat dengan semangat gotong royong ✊</span>
+    </div>
+  </div>
+  <div class="footer-flagline"></div>
+</footer>
+
+<script>
+/* ============================================================
+   ARTNYELIR '26 — script
+   ============================================================ */
+
+/* GANTI nomor WhatsApp panitia (format internasional tanpa +) */
+var WA_PANITIA = "6281234567890";
+
+/* ---------- data lomba per kategori ---------- */
+var LOMBA = {
+  "anak-1-3":   { label: "Anak 1–3 Tahun",   items: ["Merangkak Cepat", "Fashion Show Balita", "Makan Biskuit Gantung"] },
+  "anak-3-5":   { label: "Anak 3–5 Tahun",   items: ["Lomba Mewarnai", "Memasukkan Bendera ke Botol", "Estafet Bola Warna"] },
+  "anak-5-10":  { label: "Anak 5–10 Tahun",  items: ["Balap Karung", "Makan Kerupuk", "Kelereng Sendok", "Memasukkan Paku ke Botol"] },
+  "anak-10-15": { label: "Anak 10–15 Tahun", items: ["Balap Karung", "Tarik Tambang", "Estafet Air", "Futsal Antar-Gang"] },
+  "dewasa":     { label: "Dewasa (16+)",     items: ["Panjat Pinang", "Tarik Tambang", "Joget Balon", "Futsal Bapak-Bapak", "Lomba Masak Ibu-Ibu"] }
+};
+
+/* data pendaftar disimpan di memori selama halaman terbuka */
+var pendaftar = [];
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  });
+}
+
+/* ---------- bangun strip bendera (22 strip) ---------- */
+(function buildFlag(){
+  var flag = document.getElementById("flag");
+  var html = "";
+  for (var i = 0; i < 22; i++){
+    html += '<div class="strip" style="--i:' + i + '"></div>';
+  }
+  flag.innerHTML = html;
+})();
+
+/* ---------- parallax mouse di panggung hero ---------- */
+(function parallax(){
+  var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!fine || calm) return;
+
+  var hero = document.querySelector(".hero");
+  var rig  = document.getElementById("rig");
+
+  hero.addEventListener("mousemove", function(e){
+    var r = hero.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width  - 0.5;   /* -0.5 .. 0.5 */
+    var y = (e.clientY - r.top)  / r.height - 0.5;
+    rig.style.setProperty("--mx", (x * 14).toFixed(2) + "deg");
+    rig.style.setProperty("--my", (-y * 10).toFixed(2) + "deg");
+  });
+  hero.addEventListener("mouseleave", function(){
+    rig.style.setProperty("--mx", "0deg");
+    rig.style.setProperty("--my", "0deg");
+  });
+})();
+
+/* ---------- tilt 3D kartu galeri ---------- */
+(function tilt(){
+  var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!fine || calm) return;
+
+  var cards = document.querySelectorAll(".polaroid");
+  cards.forEach(function(card){
+    card.addEventListener("mousemove", function(e){
+      var r = card.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width  - 0.5;
+      var y = (e.clientY - r.top)  / r.height - 0.5;
+      card.style.transform =
+        "rotate(0deg) perspective(600px)" +
+        " rotateY(" + (x * 10).toFixed(2) + "deg)" +
+        " rotateX(" + (-y * 10).toFixed(2) + "deg)" +
+        " scale(1.03)";
+    });
+    card.addEventListener("mouseleave", function(){
+      card.style.transform = "";
+    });
+  });
+})();
+
+/* ---------- reveal saat scroll ---------- */
+(function reveal(){
+  var els = document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window)){
+    els.forEach(function(el){ el.classList.add("in"); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(function(el){ io.observe(el); });
+})();
+
+/* ---------- hitung mundur ke 17 Agustus 2026, 07.00 WIB ---------- */
+(function countdown(){
+  var target = new Date("2026-08-17T07:00:00+07:00").getTime();
+  var elH = document.getElementById("cd-hari");
+  var elJ = document.getElementById("cd-jam");
+  var elM = document.getElementById("cd-menit");
+  var elD = document.getElementById("cd-detik");
+  var lbl = document.getElementById("cd-label");
+
+  function pad(n){ return n < 10 ? "0" + n : "" + n; }
+
+  function tick(){
+    var diff = target - Date.now();
+    if (diff <= 0){
+      elH.textContent = "00"; elJ.textContent = "00";
+      elM.textContent = "00"; elD.textContent = "00";
+      lbl.innerHTML = "<strong>HARI INI! MERDEKA! 🎉</strong>";
+      clearInterval(timer);
+      return;
+    }
+    var s = Math.floor(diff / 1000);
+    elH.textContent = pad(Math.floor(s / 86400));
+    elJ.textContent = pad(Math.floor((s % 86400) / 3600));
+    elM.textContent = pad(Math.floor((s % 3600) / 60));
+    elD.textContent = pad(s % 60);
+  }
+  tick();
+  var timer = setInterval(tick, 1000);
+})();
+
+/* ---------- form: render lomba sesuai kategori ---------- */
+var chipsWrap = document.getElementById("chips-lomba");
+var formEl    = document.getElementById("form-lomba");
+var errEl     = document.getElementById("form-error");
+var suksesEl  = document.getElementById("sukses");
+
+function renderLomba(kategoriKey){
+  var data = LOMBA[kategoriKey];
+  var html = "";
+  data.items.forEach(function(nama, i){
+    var id = "lb-" + kategoriKey + "-" + i;
+    html +=
+      '<label class="chip">' +
+        '<input type="checkbox" name="lomba" value="' + esc(nama) + '" id="' + id + '" />' +
+        '<span>' + esc(nama) + '</span>' +
+      '</label>';
+  });
+  chipsWrap.innerHTML = html;
+}
+
+document.getElementById("pills-kategori").addEventListener("change", function(e){
+  if (e.target.name === "kategori") renderLomba(e.target.value);
+});
+
+/* render awal sesuai radio yang ter-checked */
+renderLomba(document.querySelector('input[name="kategori"]:checked').value);
+
+/* ---------- papan pendaftar ---------- */
+function renderBoard(){
+  var num  = document.getElementById("board-num");
+  var list = document.getElementById("board-list");
+  num.textContent = pendaftar.length;
+
+  if (pendaftar.length === 0){
+    list.innerHTML = '<li class="board-empty">Belum ada pendaftar — jadilah yang pertama! 🚩</li>';
+    return;
+  }
+
+  var terbaru = pendaftar.slice(-5).reverse();
+  var html = "";
+  terbaru.forEach(function(p){
+    var extra = p.lomba.length > 1 ? " +" + (p.lomba.length - 1) : "";
+    html +=
+      '<li>' +
+        '<div class="avatar">' + esc(p.nama.charAt(0).toUpperCase()) + '</div>' +
+        '<div>' +
+          '<div class="nm">' + esc(p.nama) + '</div>' +
+          '<div class="mt">' + esc(LOMBA[p.kategori].label) + ' · ' + esc(p.lomba[0]) + esc(extra) + '</div>' +
+        '</div>' +
+      '</li>';
+  });
+  list.innerHTML = html;
+}
+
+/* ---------- submit ---------- */
+formEl.addEventListener("submit", function(e){
+  e.preventDefault();
+  errEl.classList.remove("show");
+
+  var nama = document.getElementById("in-nama").value.trim();
+  var wa   = document.getElementById("in-wa").value.trim();
+  var blok = document.getElementById("in-blok").value.trim();
+  var kat  = document.querySelector('input[name="kategori"]:checked').value;
+  var lomba = Array.prototype.map.call(
+    document.querySelectorAll('input[name="lomba"]:checked'),
+    function(el){ return el.value; }
+  );
+
+  var masalah = [];
+  if (nama.length < 2) masalah.push("nama peserta");
+  if (wa.replace(/\D/g, "").length < 9) masalah.push("nomor WhatsApp yang valid");
+  if (lomba.length === 0) masalah.push("minimal satu lomba");
+
+  if (masalah.length){
+    errEl.textContent = "Lengkapi dulu ya: " + masalah.join(", ") + ".";
+    errEl.classList.add("show");
+    errEl.scrollIntoView({ block: "center", behavior: "smooth" });
+    return;
+  }
+
+  pendaftar.push({ nama: nama, wa: wa, blok: blok, kategori: kat, lomba: lomba });
+  renderBoard();
+
+  /* isi ringkasan sukses */
+  var detail = document.getElementById("sukses-detail");
+  detail.innerHTML =
+    '<div><dt>Nama</dt><dd>' + esc(nama) + '</dd></div>' +
+    '<div><dt>Kategori</dt><dd>' + esc(LOMBA[kat].label) + '</dd></div>' +
+    '<div><dt>Lomba</dt><dd>' + esc(lomba.join(", ")) + '</dd></div>' +
+    (blok ? '<div><dt>Blok</dt><dd>' + esc(blok) + '</dd></div>' : '');
+
+  /* link konfirmasi WhatsApp ke panitia */
+  var pesan =
+    "Halo Panitia ARTNYELIR 🙏\n" +
+    "Saya mau daftar lomba 17an:\n\n" +
+    "Nama: " + nama + "\n" +
+    "Blok/No: " + (blok || "-") + "\n" +
+    "Kategori: " + LOMBA[kat].label + "\n" +
+    "Lomba: " + lomba.join(", ") + "\n\n" +
+    "Merdeka! 🇮🇩";
+  document.getElementById("btn-wa").href =
+    "https://wa.me/" + WA_PANITIA + "?text=" + encodeURIComponent(pesan);
+
+  formEl.style.display = "none";
+  suksesEl.classList.add("show");
+  suksesEl.scrollIntoView({ block: "center", behavior: "smooth" });
+});
+
+/* daftar lagi */
+document.getElementById("btn-lagi").addEventListener("click", function(){
+  formEl.reset();
+  /* kembalikan kategori default & render ulang chips */
+  document.querySelector('input[name="kategori"][value="anak-5-10"]').checked = true;
+  renderLomba("anak-5-10");
+  suksesEl.classList.remove("show");
+  formEl.style.display = "";
+  document.getElementById("in-nama").focus();
+});
+</script>
+</body>
+</html>

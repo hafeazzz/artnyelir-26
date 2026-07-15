@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARTNYELIR '26 — Pesta 17an Komplek</title>
+<meta name="description" content="ARTNYELIR — perayaan 17 Agustus komplek. Daftar lomba untuk anak-anak (usia 1-12 tahun)." />
+
+<!-- Fonts: Anton (display), Plus Jakarta Sans (body), Caveat (caption foto) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+<!-- CSS -->
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#beranda"><span class="mini-flag"></span> Artnyelir</a>
+    <div class="nav-links">
+      <a href="#galeri">Galeri '25</a>
+      <a href="#daftar">Lomba</a>
+      <a class="btn btn-primary" href="#daftar">Daftar</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="beranda">
+  <div class="wrap hero-inner">
+
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="mini-flag"></span> Pesta Rakyat Komplek · HUT RI ke-81</p>
+
+      <h1 class="hero-title">
+        <span class="ht-main">Artnyelir</span>
+        <span class="ht-ghost" aria-hidden="true">Artnyelir</span>
+      </h1>
+
+      <p class="hero-sub">
+        Rayakan hari kemerdekaan Indonesia bersama keluarga di komplek!
+        Ikuti berbagai lomba seru untuk anak-anak, dari balita hingga pra-remaja. Merdeka! 🇮🇩
+      </p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#daftar">Daftar Lomba →</a>
+        <a class="btn btn-ghost" href="#galeri">Lihat Keseruan 2025</a>
+      </div>
+
+      <div class="countdown" role="timer" aria-label="Hitung mundur menuju 17 Agustus 2026">
+        <div class="cd-row">
+          <div class="cd-box"><b id="cd-hari">--</b><span>Hari</span></div>
+          <div class="cd-box"><b id="cd-jam">--</b><span>Jam</span></div>
+          <div class="cd-box"><b id="cd-menit">--</b><span>Menit</span></div>
+          <div class="cd-box"><b id="cd-detik">--</b><span>Detik</span></div>
+        </div>
+        <p class="cd-label" id="cd-label">menuju <strong>17 Agustus 2026</strong></p>
+      </div>
+    </div>
+
+    <!-- panggung 3D: bendera berkibar + slab mengambang -->
+    <div class="hero-stage" aria-hidden="true">
+      <div class="bob">
+        <div class="rig" id="rig">
+          <div class="slab slab-17">17</div>
+          <div class="slab slab-red"></div>
+          <div class="slab slab-pill">★ HUT 81</div>
+          <div class="flag-wrap">
+            <div class="pole"></div>
+            <div class="flag" id="flag"></div>
+            <div class="flag-shadow"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= TICKER ================= -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker-track">
+    <span>Balap Karung <b>★</b> Makan Kerupuk <b>★</b> Panjat Pinang <b>★</b> Tarik Tambang <b>★</b> Joget Balon <b>★</b> Lomba Mewarnai <b>★</b> Merdeka! <b>★</b></span>
+    <span>Balap Karung <b>★</b> Makan Kerupuk <b>★</b> Panjat Pinang <b>★</b> Tarik Tambang <b>★</b> Joget Balon <b>★</b> Lomba Mewarnai <b>★</b> Merdeka! <b>★</b></span>
+  </div>
+</div>
+
+<!-- ================= GALERI ================= -->
+<section class="galeri" id="galeri">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="mini-flag"></span> Dokumentasi · Agustus 2025</p>
+      <h2 class="h2">Keseruan Tahun Lalu</h2>
+      <p class="sub">Sebelum ikutan tahun ini, intip dulu rame-nya Artnyelir 2025 kemarin.</p>
+    </div>
+
+    <!-- GANTI FOTO ASLI:
+         Di setiap .photo, hapus <span class="ph-emoji">…</span>
+         lalu ganti dengan <img src="nama-foto.jpg" alt="deskripsi foto">.
+         Biarkan <span class="ph-year"> kalau mau tetap ada label tahunnya. -->
+    <div class="polar-grid">
+
+      <figure class="polaroid reveal" style="--d:.0s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#CE1126)" role="img" aria-label="Foto lomba panjat pinang tahun 2025">
+          <span class="ph-emoji">🌴</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>panjat pinang — puncak acara!</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.05s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#E7293B)" role="img" aria-label="Foto lomba balap karung tahun 2025">
+          <span class="ph-emoji">🏃</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>balap karung anak-anak</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.1s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#CE1126,#8F0C1C)" role="img" aria-label="Foto lomba makan kerupuk tahun 2025">
+          <span class="ph-emoji">🍘</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>makan kerupuk, susah tapi seru</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.15s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#E7293B)" role="img" aria-label="Foto lomba tarik tambang tahun 2025">
+          <span class="ph-emoji">🪢</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>tarik tambang antar-blok</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.0s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#CE1126)" role="img" aria-label="Foto lomba mewarnai anak tahun 2025">
+          <span class="ph-emoji">🖍️</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>lomba mewarnai si kecil</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.05s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#E7293B,#8F0C1C)" role="img" aria-label="Foto lomba joget balon tahun 2025">
+          <span class="ph-emoji">🎈</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>joget balon bapak-ibu 😂</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.1s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#F6C3BD,#CE1126)" role="img" aria-label="Foto lomba kelereng sendok tahun 2025">
+          <span class="ph-emoji">🥄</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>kelereng sendok, fokus penuh</figcaption>
+      </figure>
+
+      <figure class="polaroid reveal" style="--d:.15s">
+        <div class="tape"></div>
+        <div class="photo" style="--ph-bg:linear-gradient(160deg,#FFE3DF,#E7293B)" role="img" aria-label="Foto fashion show balita tahun 2025">
+          <span class="ph-emoji">👶</span>
+          <span class="ph-year">AGT '25</span>
+        </div>
+        <figcaption>fashion show balita gemes</figcaption>
+      </figure>
+
+    </div>
+
+    <p class="galeri-note">📸 Punya foto Artnyelir 2025? Kirim ke panitia biar dipajang di sini!</p>
+  </div>
+</section>
+
+<!-- ================= PENDAFTARAN ================= -->
+<section class="daftar" id="daftar">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="mini-flag"></span> Pendaftaran Dibuka</p>
+      <h2 class="h2">Daftar Sekarang</h2>
+      <p class="sub">Pendaftaran terbuka untuk anak berusia 1–12 tahun. Setiap kategori usia sudah punya lomba khusus — tinggal isi data, satu keluarga bisa mendaftarkan beberapa anak sekaligus.</p>
+    </div>
+
+    <div class="daftar-grid">
+
+      <!-- ---------- KARTU FORM ---------- -->
+      <div class="card">
+
+        <div class="form-error" id="form-error" role="alert"></div>
+
+        <!-- FORM ANAK PERTAMA (dengan data panitia) -->
+        <form id="form-anak-1" class="form-anak" novalidate>
+          <h3 class="form-heading">Data Panitia / Penanggung Jawab</h3>
+          <p class="form-desc">Diisi sekali per rumah/keluarga — panitia yang bertanggung jawab atas pendaftaran ini.</p>
+
+          <div class="field">
+            <label for="in-panitia-nama">Nama Panitia yang Diajukan *</label>
+            <input id="in-panitia-nama" type="text" placeholder="cth: Ibu Siti Nurhaliza" autocomplete="name" required />
+          </div>
+
+          <div class="field">
+            <label for="in-panitia-telpon">No. Telepon Panitia (WhatsApp) *</label>
+            <input id="in-panitia-telpon" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
+          </div>
+
+          <hr class="form-sep" />
+
+          <h3 class="form-heading">Data Peserta — Anak Ke-1</h3>
+          <p class="form-desc">Isi data anak yang akan mengikuti lomba.</p>
+
+          <div class="field">
+            <label for="in-nama-anak-1">Nama Anak *</label>
+            <input id="in-nama-anak-1" type="text" placeholder="Nama lengkap anak" required />
+          </div>
+
+          <fieldset>
+            <legend>Kategori Usia *</legend>
+            <div class="pills" id="pills-kategori-1">
+              <label class="pill"><input type="radio" name="kategori-1" value="1-4" checked /><span>1–4 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="5-7" /><span>5–7 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="8-9" /><span>8–9 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="10-12" /><span>10–12 Tahun</span></label>
+            </div>
+          </fieldset>
+          <p class="usia-note" id="lomba-note-1">Lomba: <b>—</b></p>
+
+          <fieldset>
+            <legend>Divisi / Departemen yang Diinginkan *</legend>
+            <div class="pills" id="pills-divisi-1">
+              <label class="pill"><input type="radio" name="divisi-1" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
+              <label class="pill"><input type="radio" name="divisi-1" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
+            </div>
+          </fieldset>
+
+          <button class="btn btn-primary btn-submit" type="submit">Daftar Anak Ini 🎉</button>
+        </form>
+
+        <!-- FORM ANAK BERIKUTNYA (tanpa data panitia) -->
+        <form id="form-anak-tambahan" class="form-anak" style="display:none" novalidate>
+          <h3 class="form-heading">Data Peserta — Anak Berikutnya</h3>
+          <p class="form-desc">Isi data anak tambahan. Data panitia tidak perlu diisi lagi.</p>
+
+          <div class="field">
+            <label for="in-nama-anak-tambahan">Nama Anak *</label>
+            <input id="in-nama-anak-tambahan" type="text" placeholder="Nama lengkap anak" required />
+          </div>
+
+          <fieldset>
+            <legend>Kategori Usia *</legend>
+            <div class="pills" id="pills-kategori-tambahan">
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="1-4" checked /><span>1–4 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="5-7" /><span>5–7 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="8-9" /><span>8–9 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="10-12" /><span>10–12 Tahun</span></label>
+            </div>
+          </fieldset>
+          <p class="usia-note" id="lomba-note-tambahan">Lomba: <b>—</b></p>
+
+          <fieldset>
+            <legend>Divisi / Departemen yang Diinginkan *</legend>
+            <div class="pills" id="pills-divisi-tambahan">
+              <label class="pill"><input type="radio" name="divisi-tambahan" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
+              <label class="pill"><input type="radio" name="divisi-tambahan" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
+            </div>
+          </fieldset>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" type="submit">Daftar Anak Ini</button>
+            <button class="btn btn-ghost" id="btn-selesai" type="button">Selesai Pendaftaran</button>
+          </div>
+        </form>
+
+        <!-- PANEL: ada anak lagi? -->
+        <div class="multi-q" id="sukses-anak-pertama" style="display:none" aria-live="polite">
+          <div class="sukses-check">✓</div>
+          <h3>Anak Berhasil Didaftarkan!</h3>
+          <p class="hint">Ada anak lagi yang ingin didaftarkan?</p>
+          <div class="btn-row btn-row-center">
+            <button class="btn btn-primary" id="btn-anak-lagi" type="button">Ya, Daftar Anak Lagi</button>
+            <button class="btn btn-ghost" id="btn-lihat-ringkasan" type="button">Tidak, Lihat Ringkasan</button>
+          </div>
+        </div>
+
+        <!-- PANEL: ringkasan akhir -->
+        <div class="ringkasan" id="ringkasan-akhir" style="display:none" aria-live="polite">
+          <div class="sukses-check">🎉</div>
+          <h3>Ringkasan Pendaftaran</h3>
+          <dl class="sukses-detail">
+            <div><dt>Panitia</dt><dd id="ringkasan-panitia"></dd></div>
+            <div><dt>No. Telepon</dt><dd id="ringkasan-telpon"></dd></div>
+          </dl>
+          <h4 class="ringkasan-sub">Anak-anak yang Terdaftar</h4>
+          <ul class="ringkasan-list" id="ringkasan-list"></ul>
+          <div class="sukses-cta">
+            <a class="btn btn-primary" id="btn-wa-akhir" href="#" target="_blank" rel="noopener">Konfirmasi via WhatsApp</a>
+            <button class="btn btn-ghost" id="btn-daftar-baru" type="button">Pendaftaran Baru</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ---------- PAPAN PENDAFTAR ---------- -->
+      <aside class="board">
+        <div class="board-num" id="board-num">0</div>
+        <div class="board-label">anak sudah daftar</div>
+        <ul class="board-list" id="board-list">
+          <li class="board-empty" id="board-empty">Belum ada pendaftar — jadilah yang pertama! 🚩</li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-merdeka" aria-hidden="true">Merdeka!</div>
+    <div class="footer-grid">
+      <div>
+        <b>ARTNYELIR '26</b>
+        Pesta 17 Agustus warga komplek.<br />
+        Dirgahayu Republik Indonesia ke-81 🇮🇩
+      </div>
+      <div>
+        <b>Lokasi &amp; Waktu</b>
+        Lapangan komplek · 17 Agustus 2026<br />
+        Mulai pukul 07.00 WIB sampai selesai
+      </div>
+      <div>
+        <b>Kontak Panitia</b>
+        <!-- GANTI nomor WA panitia di sini & di variabel WA_PANITIA (js/data.js) -->
+        <a href="https://wa.me/6281234567890" target="_blank" rel="noopener">0812-3456-7890 (WhatsApp)</a><br />
+        Pendaftaran ditutup 15 Agustus 2026
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Panitia Artnyelir</span>
+      <span>Dibuat dengan semangat gotong royong ✊</span>
+    </div>
+  </div>
+  <div class="footer-flagline"></div>
+</footer>
+
+<!-- Bangun strip bendera (inline, butuh #flag di DOM) -->
+<script>
+(function buildFlag(){
+  var flag = document.getElementById("flag");
+  var html = "";
+  for (var i = 0; i < 22; i++){
+    html += '<div class="strip" style="--i:' + i + '"></div>';
+  }
+  flag.innerHTML = html;
+})();
+</script>
+
+<!-- Modul JS (urutan penting: data → ui → form → main) -->
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/form.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "artnyelir-26",
+  "version": "1.0.0",
+  "description": "ARTNYELIR '26 — website pendaftaran lomba 17 Agustus komplek",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -c-1",
+    "dev": "npx http-server -p 3000 -c-1",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["17an", "kemerdekaan", "registration", "artnyelir", "lomba"],
+  "author": "Panitia Artnyelir",
+  "license": "MIT"
+}
