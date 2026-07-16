@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin — ARTNYELIR '26</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet" />
+
+<!-- WAJIB build "-compat": build modular tidak membuat global `firebase` -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+<style>
+  :root{
+    --merah:#CE1126; --merah-tua:#8F0C1C; --teks:#1a1a1a;
+    --abu:#6b7280; --garis:#e5e7eb; --bg:#f7f7f8;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0 }
+  body{
+    font-family:"Plus Jakarta Sans",system-ui,sans-serif;
+    background:var(--bg); color:var(--teks); line-height:1.5;
+    padding:24px 16px;
+  }
+  .wrap{ max-width:1100px; margin:0 auto }
+
+  header{ margin-bottom:24px }
+  h1{ font-size:1.5rem; font-weight:800 }
+  .sub{ color:var(--abu); font-size:.9rem; margin-top:4px }
+
+  .card{
+    background:#fff; border:1px solid var(--garis); border-radius:14px;
+    padding:24px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+
+  /* ---------- panel login ---------- */
+  #panel-login{ max-width:420px; margin:8vh auto 0 }
+  .field{ margin-bottom:14px }
+  label{ display:block; font-size:.82rem; font-weight:700; margin-bottom:6px }
+  input{
+    width:100%; padding:11px 13px; font:inherit; font-size:.95rem;
+    border:1px solid var(--garis); border-radius:9px; background:#fff;
+  }
+  input:focus{ outline:2px solid var(--merah); outline-offset:1px; border-color:transparent }
+
+  .btn{
+    font:inherit; font-weight:700; font-size:.92rem; cursor:pointer;
+    padding:11px 18px; border-radius:9px; border:1px solid transparent;
+    transition:filter .15s, opacity .15s;
+  }
+  .btn:hover:not(:disabled){ filter:brightness(1.08) }
+  .btn:disabled{ opacity:.55; cursor:not-allowed }
+  .btn-primary{ background:var(--merah); color:#fff }
+  .btn-ghost{ background:#fff; color:var(--teks); border-color:var(--garis) }
+  .btn-block{ width:100% }
+
+  .err{
+    display:none; background:#fdecec; color:var(--merah-tua);
+    border:1px solid #f6c3bd; border-radius:9px;
+    padding:10px 13px; font-size:.85rem; margin-bottom:14px;
+  }
+  .err.show{ display:block }
+
+  /* ---------- panel data ---------- */
+  #panel-data{ display:none }
+  .bar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin-bottom:16px;
+  }
+  .bar .spacer{ flex:1 }
+  .count{ font-size:.85rem; color:var(--abu) }
+  .count b{ color:var(--merah); font-size:1.1rem }
+
+  .tabel-scroll{ overflow-x:auto; border:1px solid var(--garis); border-radius:12px; background:#fff }
+  table{ border-collapse:collapse; width:100%; font-size:.86rem; white-space:nowrap }
+  th,td{ padding:10px 13px; text-align:left; border-bottom:1px solid var(--garis) }
+  th{ background:#fafafa; font-weight:700; font-size:.75rem; text-transform:uppercase; letter-spacing:.03em; color:var(--abu) }
+  tbody tr:last-child td{ border-bottom:none }
+  tbody tr:hover{ background:#fafafa }
+  .kosong{ padding:40px; text-align:center; color:var(--abu); font-size:.9rem }
+
+  @media (max-width:640px){
+    body{ padding:16px 12px }
+    .card{ padding:18px }
+    .bar .btn{ flex:1 1 auto }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ---------- LOGIN ---------- -->
+  <div id="panel-login" class="card">
+    <header>
+      <h1>Admin ARTNYELIR '26</h1>
+      <p class="sub">Masuk dengan akun panitia untuk melihat data pendaftar.</p>
+    </header>
+
+    <div class="err" id="login-err" role="alert"></div>
+
+    <form id="form-login">
+      <div class="field">
+        <label for="in-email">Email Panitia</label>
+        <input id="in-email" type="email" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="in-password">Password</label>
+        <input id="in-password" type="password" autocomplete="current-password" required />
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" id="btn-unlock">🔓 Unlock</button>
+    </form>
+  </div>
+
+  <!-- ---------- DATA ---------- -->
+  <div id="panel-data">
+    <header>
+      <h1>Data Pendaftar</h1>
+      <p class="sub" id="info-user"></p>
+    </header>
+
+    <div class="bar">
+      <span class="count">Total: <b id="jml">0</b> anak</span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="btn-refresh" type="button">🔄 Refresh Data</button>
+      <button class="btn btn-primary" id="btn-csv" type="button">📊 Download Data</button>
+      <button class="btn btn-ghost" id="btn-logout" type="button">Keluar</button>
+    </div>
+
+    <div class="tabel-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Waktu</th><th>Nama Panitia</th><th>No. Telepon</th>
+            <th>Nama Anak</th><th>Kategori</th><th>Lomba</th><th>Divisi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="kosong" id="tabel-kosong">Belum ada pendaftar.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   ARTNYELIR '26 — halaman admin
+   Password TIDAK ada di file ini. Akses data dijaga Firebase Auth
+   + Rules (".read": "auth != null"), bukan oleh JS di halaman ini.
+   ============================================================ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBnVlGsEsX1k4ALRC_q_jqf8NY6bP3Yie4",
+  authDomain: "artnyelir-26.firebaseapp.com",
+  databaseURL: "https://artnyelir-26-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "artnyelir-26",
+  storageBucket: "artnyelir-26.firebasestorage.app",
+  messagingSenderId: "754203610454",
+  appId: "1:754203610454:web:12247f8f001d01a7871af7"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const pendaftaranRef = firebase.database().ref("pendaftaran");
+console.log("[Admin] Firebase siap.");
+
+const panelLogin = document.getElementById("panel-login");
+const panelData  = document.getElementById("panel-data");
+const errEl      = document.getElementById("login-err");
+const tbody      = document.getElementById("tbody");
+const kosongEl   = document.getElementById("tabel-kosong");
+
+let barisTerkini = [];   /* cache baris untuk CSV */
+let listenerAktif = false;
+
+/* sesi berakhir saat tab ditutup — lebih aman untuk HP bersama */
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+
+function tampilkanError(pesan){
+  errEl.textContent = pesan;
+  errEl.classList.add("show");
+}
+
+/* ---------- login ---------- */
+document.getElementById("form-login").addEventListener("submit", function(e){
+  e.preventDefault();
+  errEl.classList.remove("show");
+
+  const email = document.getElementById("in-email").value.trim();
+  const pass  = document.getElementById("in-password").value;
+  const btn   = document.getElementById("btn-unlock");
+
+  btn.disabled = true;
+  btn.textContent = "Memeriksa…";
+  console.log("[Admin] Mencoba login:", email);
+
+  auth.signInWithEmailAndPassword(email, pass).catch(function(err){
+    console.warn("[Admin] Login gagal:", err.code);
+    /* Firebase menyamarkan "email tidak ada" vs "password salah" jadi
+       invalid-credential — jangan bocorkan mana yang salah. */
+    const pesan =
+      err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" ||
+      err.code === "auth/user-not-found"
+        ? "Email atau password salah."
+        : err.code === "auth/too-many-requests"
+        ? "Terlalu banyak percobaan. Tunggu beberapa menit."
+        : "Gagal masuk: " + err.message;
+    tampilkanError(pesan);
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = "🔓 Unlock";
+  });
+});
+
+/* ---------- reaksi status login ---------- */
+auth.onAuthStateChanged(function(user){
+  if (user){
+    console.log("✅ [Admin] Masuk sebagai", user.email);
+    document.getElementById("info-user").textContent = "Masuk sebagai " + user.email;
+    panelLogin.style.display = "none";
+    panelData.style.display  = "block";
+    document.getElementById("in-password").value = "";
+    pasangListener();
+  } else {
+    console.log("[Admin] Belum masuk.");
+    lepasListener();
+    panelData.style.display  = "none";
+    panelLogin.style.display = "block";
+  }
+});
+
+document.getElementById("btn-logout").addEventListener("click", function(){
+  auth.signOut();
+});
+
+/* ---------- data real-time ---------- */
+function pasangListener(){
+  if (listenerAktif) return;
+  listenerAktif = true;
+  console.log("[Admin] Memasang listener real-time /pendaftaran");
+
+  pendaftaranRef.on("value", function(snap){
+    const val = snap.val() || {};
+    barisTerkini = Object.keys(val).map(function(key){
+      return Object.assign({ _key: key }, val[key]);
+    });
+    console.log("[Admin] Data diterima:", barisTerkini.length, "baris");
+    renderTabel();
+  }, function(err){
+    console.error("❌ [Admin] Gagal membaca data:", err);
+    alert("Gagal membaca data: " + err.message);
+  });
+}
+
+function lepasListener(){
+  if (!listenerAktif) return;
+  pendaftaranRef.off();
+  listenerAktif = false;
+  barisTerkini = [];
+  tbody.innerHTML = "";
+}
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  });
+}
+
+function renderTabel(){
+  document.getElementById("jml").textContent = barisTerkini.length;
+  kosongEl.style.display = barisTerkini.length ? "none" : "block";
+
+  tbody.innerHTML = barisTerkini.map(function(r, i){
+    return "<tr>" +
+      "<td>" + (i + 1) + "</td>" +
+      "<td>" + esc(r.waktu) + "</td>" +
+      "<td>" + esc(r.namaPanitia) + "</td>" +
+      "<td>" + esc(r.noTelepon) + "</td>" +
+      "<td>" + esc(r.namaAnak) + "</td>" +
+      "<td>" + esc(r.kategori) + "</td>" +
+      "<td>" + esc(r.lomba) + "</td>" +
+      "<td>" + esc(r.divisi) + "</td>" +
+    "</tr>";
+  }).join("");
+}
+
+/* Refresh manual: listener "value" sudah real-time, tapi tombol ini
+   berguna kalau koneksi sempat putus dan user ingin memastikan. */
+document.getElementById("btn-refresh").addEventListener("click", function(){
+  const btn = this;
+  btn.disabled = true;
+  console.log("[Admin] Refresh manual…");
+  pendaftaranRef.once("value").then(function(snap){
+    const val = snap.val() || {};
+    barisTerkini = Object.keys(val).map(function(key){
+      return Object.assign({ _key: key }, val[key]);
+    });
+    console.log("✅ [Admin] Refresh selesai:", barisTerkini.length, "baris");
+    renderTabel();
+  }).catch(function(err){
+    console.error("❌ [Admin] Refresh gagal:", err);
+    alert("Refresh gagal: " + err.message);
+  }).then(function(){
+    btn.disabled = false;
+  });
+});
+
+/* ---------- export CSV ---------- */
+function selCSV(nilai){
+  const s = String(nilai == null ? "" : nilai);
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+/* Excel memotong "0" di depan nomor telepon kalau dibaca sebagai angka.
+   Formula ="0812..." memaksanya tetap teks. */
+function selTelepon(nomor){
+  const s = String(nomor == null ? "" : nomor).replace(/"/g, '""');
+  return '"=""' + s + '"""';
+}
+
+document.getElementById("btn-csv").addEventListener("click", function(){
+  if (!barisTerkini.length){
+    alert("Belum ada data untuk diunduh.");
+    return;
+  }
+  console.log("[Admin] Menyusun CSV:", barisTerkini.length, "baris");
+
+  const judul = ["Waktu","Nama Panitia","No Telepon","Nama Anak","Kategori","Lomba","Divisi"];
+  const baris = barisTerkini.map(function(r){
+    return [
+      selCSV(r.waktu), selCSV(r.namaPanitia), selTelepon(r.noTelepon),
+      selCSV(r.namaAnak), selCSV(r.kategori), selCSV(r.lomba), selCSV(r.divisi)
+    ].join(",");
+  });
+
+  /* BOM ﻿ supaya emoji & "–" di kolom divisi/kategori tidak jadi mojibake di Excel */
+  const csv = "﻿" + [judul.map(selCSV).join(",")].concat(baris).join("\r\n");
+
+  const d = new Date();
+  const tanggal = d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+  const namaFile = "artnyelir-pendaftaran-" + tanggal + ".csv";
+
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = namaFile;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  console.log("✅ [Admin] CSV diunduh:", namaFile);
+});
+</script>
+
+</body>
+</html>
