@@ -9,32 +9,29 @@ function esc(s){
   });
 }
 
-/* ---------- papan pendaftar: total anak + 5 terbaru ---------- */
-function renderBoard(){
+/* ---------- papan pendaftar: jumlah anak (global, realtime) ----------
+   Hanya angka — nama anak tidak pernah ditampilkan di halaman publik.
+   Sumbernya /statistik/jumlah, bukan /pendaftaran (yang butuh login). */
+function renderBoard(jumlah){
   var num  = document.getElementById("board-num");
-  var list = document.getElementById("board-list");
+  var note = document.getElementById("board-note");
 
-  num.textContent = pendaftar.anak.length;
-
-  if (pendaftar.anak.length === 0){
-    list.innerHTML = '<li class="board-empty">Belum ada pendaftar — jadilah yang pertama! 🚩</li>';
+  if (jumlah === null || jumlah === undefined){
+    num.textContent = "–";
+    note.textContent = "Menghitung…";
     return;
   }
 
-  var terbaru = pendaftar.anak.slice(-5).reverse();
-  var html = "";
-  terbaru.forEach(function(anak){
-    var avatar = anak.nama.charAt(0).toUpperCase();
-    html +=
-      '<li>' +
-        '<div class="avatar">' + esc(avatar) + '</div>' +
-        '<div>' +
-          '<div class="nm">' + esc(anak.nama) + '</div>' +
-          '<div class="mt">' + esc(KATEGORI[anak.kategori].label) + ' · ' + esc(anak.lomba) + '</div>' +
-        '</div>' +
-      '</li>';
-  });
-  list.innerHTML = html;
+  if (num.textContent !== String(jumlah)){
+    num.textContent = jumlah;
+    num.classList.remove("naik");
+    void num.offsetWidth;          /* paksa reflow supaya animasi terulang */
+    num.classList.add("naik");
+  }
+
+  note.textContent = jumlah === 0
+    ? "Belum ada pendaftar — jadilah yang pertama! 🚩"
+    : "Ayo daftarkan anakmu juga! 🇮🇩";
 }
 
 /* ---------- ringkasan akhir: panitia + daftar semua anak ---------- */
@@ -49,7 +46,8 @@ function renderRingkasan(){
       '<li>' +
         '<strong>Anak ' + (i + 1) + ':</strong> ' + esc(anak.nama) +
         ' — ' + esc(KATEGORI[anak.kategori].label) +
-        '<small>' + esc(anak.lomba) + ' · ' + esc(DIVISI[anak.divisi]) + '</small>' +
+        '<small>' + esc(DIVISI[anak.divisi]) +
+        ' · ortu: ' + esc(anak.noOrangTua) + '</small>' +
       '</li>';
   });
   list.innerHTML = html;

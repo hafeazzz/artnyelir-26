@@ -96,5 +96,7 @@
   var timer = setInterval(tick, 1000);
 })();
 
-/* ---------- render awal papan pendaftar ---------- */
-renderBoard();
+/* ---------- papan pendaftar ----------
+   Tampilkan status "menghitung" dulu; angka aslinya menyusul dari
+   listener /statistik/jumlah yang dipasang di form.js. */
+renderBoard(null);

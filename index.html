@@ -233,6 +233,15 @@
             <input id="in-panitia-telpon" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
           </div>
 
+          <fieldset>
+            <legend>Divisi / Departemen yang Diinginkan *</legend>
+            <div class="pills" id="pills-divisi-1">
+              <label class="pill"><input type="radio" name="divisi-1" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
+              <label class="pill"><input type="radio" name="divisi-1" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
+              <label class="pill"><input type="radio" name="divisi-1" value="lomba" /><span>🏆 Lomba</span></label>
+            </div>
+          </fieldset>
+
           <hr class="form-sep" />
 
           <h3 class="form-heading">Data Peserta — Anak Ke-1</h3>
@@ -246,21 +255,18 @@
           <fieldset>
             <legend>Kategori Usia *</legend>
             <div class="pills" id="pills-kategori-1">
-              <label class="pill"><input type="radio" name="kategori-1" value="1-4" checked /><span>1–4 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-1" value="5-7" /><span>5–7 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-1" value="8-9" /><span>8–9 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="1-3" checked /><span>1–3 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="4-6" /><span>4–6 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-1" value="7-9" /><span>7–9 Tahun</span></label>
               <label class="pill"><input type="radio" name="kategori-1" value="10-12" /><span>10–12 Tahun</span></label>
             </div>
           </fieldset>
-          <p class="usia-note" id="lomba-note-1">Lomba: <b>—</b></p>
+          <p class="usia-note">Lomba untuk tiap kategori diumumkan pada hari-H 🤫</p>
 
-          <fieldset>
-            <legend>Divisi / Departemen yang Diinginkan *</legend>
-            <div class="pills" id="pills-divisi-1">
-              <label class="pill"><input type="radio" name="divisi-1" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
-              <label class="pill"><input type="radio" name="divisi-1" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
-            </div>
-          </fieldset>
+          <div class="field">
+            <label for="in-ortu-telpon-1">Nomor Orang Tua (WhatsApp) *</label>
+            <input id="in-ortu-telpon-1" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
+          </div>
 
           <button class="btn btn-primary btn-submit" type="submit">Daftar Anak Ini 🎉</button>
         </form>
@@ -270,6 +276,15 @@
           <h3 class="form-heading">Data Peserta — Anak Berikutnya</h3>
           <p class="form-desc">Isi data anak tambahan. Data panitia tidak perlu diisi lagi.</p>
 
+          <fieldset>
+            <legend>Divisi / Departemen yang Diinginkan *</legend>
+            <div class="pills" id="pills-divisi-tambahan">
+              <label class="pill"><input type="radio" name="divisi-tambahan" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
+              <label class="pill"><input type="radio" name="divisi-tambahan" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
+              <label class="pill"><input type="radio" name="divisi-tambahan" value="lomba" /><span>🏆 Lomba</span></label>
+            </div>
+          </fieldset>
+
           <div class="field">
             <label for="in-nama-anak-tambahan">Nama Anak *</label>
             <input id="in-nama-anak-tambahan" type="text" placeholder="Nama lengkap anak" required />
@@ -278,21 +293,18 @@
           <fieldset>
             <legend>Kategori Usia *</legend>
             <div class="pills" id="pills-kategori-tambahan">
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="1-4" checked /><span>1–4 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="5-7" /><span>5–7 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="8-9" /><span>8–9 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="1-3" checked /><span>1–3 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="4-6" /><span>4–6 Tahun</span></label>
+              <label class="pill"><input type="radio" name="kategori-tambahan" value="7-9" /><span>7–9 Tahun</span></label>
               <label class="pill"><input type="radio" name="kategori-tambahan" value="10-12" /><span>10–12 Tahun</span></label>
             </div>
           </fieldset>
-          <p class="usia-note" id="lomba-note-tambahan">Lomba: <b>—</b></p>
+          <p class="usia-note">Lomba untuk tiap kategori diumumkan pada hari-H 🤫</p>
 
-          <fieldset>
-            <legend>Divisi / Departemen yang Diinginkan *</legend>
-            <div class="pills" id="pills-divisi-tambahan">
-              <label class="pill"><input type="radio" name="divisi-tambahan" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
-              <label class="pill"><input type="radio" name="divisi-tambahan" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
-            </div>
-          </fieldset>
+          <div class="field">
+            <label for="in-ortu-telpon-tambahan">Nomor Orang Tua (WhatsApp) *</label>
+            <input id="in-ortu-telpon-tambahan" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
+          </div>
 
           <div class="btn-row">
             <button class="btn btn-primary" type="submit">Daftar Anak Ini</button>
@@ -331,11 +343,9 @@
 
       <!-- ---------- PAPAN PENDAFTAR ---------- -->
       <aside class="board">
-        <div class="board-num" id="board-num">0</div>
+        <div class="board-num" id="board-num">–</div>
         <div class="board-label">anak sudah daftar</div>
-        <ul class="board-list" id="board-list">
-          <li class="board-empty" id="board-empty">Belum ada pendaftar — jadilah yang pertama! 🚩</li>
-        </ul>
+        <p class="board-note" id="board-note">Jadilah yang pertama! 🚩</p>
       </aside>
 
     </div>

@@ -56,6 +56,7 @@
   .btn:disabled{ opacity:.55; cursor:not-allowed }
   .btn-primary{ background:var(--merah); color:#fff }
   .btn-ghost{ background:#fff; color:var(--teks); border-color:var(--garis) }
+  .btn-bahaya{ background:#fff; color:#b91c1c; border-color:#fca5a5 }
   .btn-block{ width:100% }
 
   .err{
@@ -128,6 +129,7 @@
       <span class="spacer"></span>
       <button class="btn btn-ghost" id="btn-refresh" type="button">🔄 Refresh Data</button>
       <button class="btn btn-primary" id="btn-csv" type="button">📊 Download Data</button>
+      <button class="btn btn-bahaya" id="btn-reset" type="button">🗑️ Reset Semua Data</button>
       <button class="btn btn-ghost" id="btn-logout" type="button">Keluar</button>
     </div>
 
@@ -136,7 +138,7 @@
         <thead>
           <tr>
             <th>#</th><th>Waktu</th><th>Nama Panitia</th><th>No. Telepon</th>
-            <th>Nama Anak</th><th>Kategori</th><th>Lomba</th><th>Divisi</th>
+            <th>Nama Anak</th><th>Kategori</th><th>No. Orang Tua</th><th>Divisi</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -167,6 +169,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const pendaftaranRef = firebase.database().ref("pendaftaran");
+const statistikRef   = firebase.database().ref("statistik/jumlah");
 console.log("[Admin] Firebase siap.");
 
 const panelLogin = document.getElementById("panel-login");
@@ -251,9 +254,25 @@ function pasangListener(){
     });
     console.log("[Admin] Data diterima:", barisTerkini.length, "baris");
     renderTabel();
+    selaraskanCounter();
   }, function(err){
     console.error("❌ [Admin] Gagal membaca data:", err);
     alert("Gagal membaca data: " + err.message);
+  });
+}
+
+/* Counter publik dinaikkan dari halaman form, jadi bisa melenceng kalau
+   ada submit yang push-nya berhasil tapi increment-nya gagal. Halaman ini
+   satu-satunya yang boleh membaca /pendaftaran, jadi ia yang mengoreksi:
+   tiap admin membuka halaman, angkanya diselaraskan ke jumlah sebenarnya. */
+function selaraskanCounter(){
+  const benar = barisTerkini.length;
+  statistikRef.once("value").then(function(snap){
+    if (snap.val() === benar) return;
+    console.log("[Admin] Counter melenceng (" + snap.val() + " → " + benar + "), menyelaraskan…");
+    return statistikRef.set(benar);
+  }).catch(function(err){
+    console.warn("[Admin] Gagal menyelaraskan counter:", err);
   });
 }
 
@@ -283,7 +302,7 @@ function renderTabel(){
       "<td>" + esc(r.noTelepon) + "</td>" +
       "<td>" + esc(r.namaAnak) + "</td>" +
       "<td>" + esc(r.kategori) + "</td>" +
-      "<td>" + esc(r.lomba) + "</td>" +
+      "<td>" + esc(r.noOrangTua) + "</td>" +
       "<td>" + esc(r.divisi) + "</td>" +
     "</tr>";
   }).join("");
@@ -330,11 +349,14 @@ document.getElementById("btn-csv").addEventListener("click", function(){
   }
   console.log("[Admin] Menyusun CSV:", barisTerkini.length, "baris");
 
-  const judul = ["Waktu","Nama Panitia","No Telepon","Nama Anak","Kategori","Lomba","Divisi"];
+  /* Lomba disembunyikan dari tabel (diumumkan H-hari) tapi tetap ikut di
+     CSV — file ini untuk panitia menyiapkan acara. */
+  const judul = ["Waktu","Nama Panitia","No Telepon","Nama Anak","Kategori","No Orang Tua","Divisi","Lomba"];
   const baris = barisTerkini.map(function(r){
     return [
       selCSV(r.waktu), selCSV(r.namaPanitia), selTelepon(r.noTelepon),
-      selCSV(r.namaAnak), selCSV(r.kategori), selCSV(r.lomba), selCSV(r.divisi)
+      selCSV(r.namaAnak), selCSV(r.kategori), selTelepon(r.noOrangTua),
+      selCSV(r.divisi), selCSV(r.lomba)
     ].join(",");
   });
 
@@ -355,6 +377,61 @@ document.getElementById("btn-csv").addEventListener("click", function(){
   URL.revokeObjectURL(url);
 
   console.log("✅ [Admin] CSV diunduh:", namaFile);
+});
+
+/* ---------- reset semua data ----------
+   Konfirmasinya memakai password akun panitia yang sedang login
+   (reauthenticate), bukan string yang ditanam di file ini. Password
+   hardcoded tidak akan menambah keamanan apa pun di sini: yang bisa
+   menekan tombol ini sudah lolos login, dan stringnya akan terbaca
+   siapa saja lewat View Source. */
+document.getElementById("btn-reset").addEventListener("click", function(){
+  const user = auth.currentUser;
+  if (!user) return;
+
+  if (!barisTerkini.length){
+    alert("Data sudah kosong.");
+    return;
+  }
+
+  const jml = barisTerkini.length;
+  if (!confirm("Yakin hapus SEMUA data?\n\n" + jml + " pendaftaran akan hilang permanen. Aksi ini tidak bisa di-undo.\n\nDisarankan unduh CSV dulu sebagai cadangan.")) return;
+
+  const pass = prompt("Ketik ulang password akun " + user.email + " untuk konfirmasi:");
+  if (pass === null) return;          /* user menekan Cancel */
+  if (!pass){
+    alert("Password kosong — reset dibatalkan.");
+    return;
+  }
+
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Menghapus…";
+  console.log("[Admin] Reset diminta, memverifikasi ulang password…");
+
+  const kredensial = firebase.auth.EmailAuthProvider.credential(user.email, pass);
+
+  user.reauthenticateWithCredential(kredensial).then(function(){
+    console.log("[Admin] Password terverifikasi. Menghapus /pendaftaran…");
+    return pendaftaranRef.remove();
+  }).then(function(){
+    console.log("[Admin] Data terhapus. Menolkan counter…");
+    return statistikRef.set(0);
+  }).then(function(){
+    /* listener .on("value") sudah mengosongkan tabel otomatis */
+    console.log("✅ [Admin] Semua data berhasil dihapus (" + jml + " pendaftaran).");
+    alert("✅ Semua data berhasil dihapus.");
+  }).catch(function(err){
+    console.error("❌ [Admin] Reset gagal:", err.code || err.message);
+    const pesan =
+      err.code === "auth/invalid-credential" || err.code === "auth/wrong-password"
+        ? "Password salah — data TIDAK dihapus."
+        : "Reset gagal: " + err.message;
+    alert(pesan);
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = "🗑️ Reset Semua Data";
+  });
 });
 </script>
 

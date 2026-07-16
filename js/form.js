@@ -14,6 +14,7 @@ var panelRingkas = document.getElementById("ringkasan-akhir");
    diblokir, config belum diisi), pendaftaranRef = null dan form otomatis
    jatuh ke mode WhatsApp-only supaya halaman tidak mati total. */
 var pendaftaranRef = null;
+var statistikRef   = null;
 
 (function initFirebase(){
   if (typeof database === "undefined" || !database){
@@ -21,8 +22,34 @@ var pendaftaranRef = null;
     return;
   }
   pendaftaranRef = database.ref(FIREBASE_PATH);
+  statistikRef   = database.ref(STATISTIK_PATH);
   console.log("[Firebase] Terhubung ke path /" + FIREBASE_PATH);
+
+  /* Counter realtime. Halaman ini TIDAK boleh membaca /pendaftaran (isinya
+     data pribadi, .read butuh login), jadi papan membaca angka dari
+     /statistik/jumlah yang memang publik. */
+  statistikRef.on("value", function(snap){
+    var jumlah = snap.val();
+    console.log("[Firebase] Counter:", jumlah);
+    renderBoard(typeof jumlah === "number" ? jumlah : 0);
+  }, function(err){
+    console.error("❌ [Firebase] Gagal membaca counter:", err);
+    renderBoard(null);
+  });
 })();
+
+/* Naikkan counter satu langkah. Transaction supaya dua pendaftaran
+   bersamaan tidak saling menimpa. Sengaja tidak menghambat alur: kalau
+   counter gagal naik, pendaftarannya sendiri sudah aman tersimpan —
+   halaman admin akan menyelaraskan angkanya nanti. */
+function naikkanCounter(){
+  if (!statistikRef) return;
+  statistikRef.transaction(function(nilai){
+    return (typeof nilai === "number" ? nilai : 0) + 1;
+  }).catch(function(err){
+    console.warn("[Firebase] Counter gagal naik (data tetap tersimpan):", err);
+  });
+}
 
 /* ---------- helper ---------- */
 function isValidPhone(phone){
@@ -61,13 +88,15 @@ function simpanKeFirebase(anak){
     namaAnak:    anak.nama,
     kategori:    KATEGORI[anak.kategori].label,
     lomba:       anak.lomba,
-    divisi:      DIVISI[anak.divisi]
+    divisi:      DIVISI[anak.divisi],
+    noOrangTua:  anak.noOrangTua
   };
 
   console.log("[Firebase] Mengirim data:", data);
 
   return pendaftaranRef.push(data).then(function(ref){
     console.log("✅ Data saved — /" + FIREBASE_PATH + "/" + ref.key);
+    naikkanCounter();
     return ref;
   });
 }
@@ -85,21 +114,9 @@ function kunciTombol(form, sedangKirim){
   }
 }
 
-/* update catatan "Lomba: ..." sesuai kategori terpilih */
-function updateLombaNote(form, name, noteEl){
-  var kategori = radioValue(form, name);
-  noteEl.querySelector("b").textContent = kategori ? KATEGORI[kategori].lomba : "—";
-}
-
-var note1 = document.getElementById("lomba-note-1");
-var noteTambahan = document.getElementById("lomba-note-tambahan");
-
-form1.addEventListener("change", function(e){
-  if (e.target.name === "kategori-1") updateLombaNote(form1, "kategori-1", note1);
-});
-formTambahan.addEventListener("change", function(e){
-  if (e.target.name === "kategori-tambahan") updateLombaNote(formTambahan, "kategori-tambahan", noteTambahan);
-});
+/* Nama lomba tiap kategori sengaja TIDAK ditampilkan di halaman publik —
+   diumumkan panitia pada hari-H. Nilainya tetap ikut tersimpan ke Firebase
+   dan muncul di CSV admin supaya panitia bisa menyiapkan acara. */
 
 /* ---------- submit anak pertama (dengan data panitia) ---------- */
 form1.addEventListener("submit", function(e){
@@ -109,6 +126,7 @@ form1.addEventListener("submit", function(e){
   var panitia  = document.getElementById("in-panitia-nama").value.trim();
   var telpon   = document.getElementById("in-panitia-telpon").value.trim();
   var nama     = document.getElementById("in-nama-anak-1").value.trim();
+  var ortu     = document.getElementById("in-ortu-telpon-1").value.trim();
   var kategori = radioValue(form1, "kategori-1");
   var divisi   = radioValue(form1, "divisi-1");
 
@@ -116,6 +134,7 @@ form1.addEventListener("submit", function(e){
   if (panitia.length < 2)     masalah.push("nama panitia");
   if (!isValidPhone(telpon))  masalah.push("nomor telepon panitia yang valid");
   if (nama.length < 2)        masalah.push("nama anak");
+  if (!isValidPhone(ortu))    masalah.push("nomor orang tua yang valid");
 
   if (masalah.length){
     console.warn("[Form] Validasi gagal:", masalah);
@@ -128,7 +147,8 @@ form1.addEventListener("submit", function(e){
     nama: nama,
     kategori: kategori,
     divisi: divisi,
-    lomba: KATEGORI[kategori].lomba
+    lomba: KATEGORI[kategori].lomba,
+    noOrangTua: ortu
   };
 
   console.log("[Form] Submit anak ke-1:", anakBaru.nama);
@@ -136,7 +156,9 @@ form1.addEventListener("submit", function(e){
 
   simpanKeFirebase(anakBaru).then(function(){
     pendaftar.anak.push(anakBaru);
-    renderBoard();
+    /* papan tidak di-render di sini — listener /statistik/jumlah yang
+       memperbaruinya, dan itu jalan untuk semua pengunjung, bukan cuma
+       yang baru submit. */
 
     /* tampilkan pertanyaan "ada anak lagi?" */
     form1.style.display = "none";
@@ -156,12 +178,17 @@ formTambahan.addEventListener("submit", function(e){
   sembunyikanError();
 
   var nama     = document.getElementById("in-nama-anak-tambahan").value.trim();
+  var ortu     = document.getElementById("in-ortu-telpon-tambahan").value.trim();
   var kategori = radioValue(formTambahan, "kategori-tambahan");
   var divisi   = radioValue(formTambahan, "divisi-tambahan");
 
-  if (nama.length < 2){
-    console.warn("[Form] Validasi gagal: nama anak");
-    tampilkanError("Lengkapi dulu ya: nama anak.");
+  var masalah = [];
+  if (nama.length < 2)      masalah.push("nama anak");
+  if (!isValidPhone(ortu))  masalah.push("nomor orang tua yang valid");
+
+  if (masalah.length){
+    console.warn("[Form] Validasi gagal:", masalah);
+    tampilkanError("Lengkapi dulu ya: " + masalah.join(", ") + ".");
     return;
   }
 
@@ -169,7 +196,8 @@ formTambahan.addEventListener("submit", function(e){
     nama: nama,
     kategori: kategori,
     divisi: divisi,
-    lomba: KATEGORI[kategori].lomba
+    lomba: KATEGORI[kategori].lomba,
+    noOrangTua: ortu
   };
 
   console.log("[Form] Submit anak ke-" + (pendaftar.anak.length + 1) + ":", anakBaru.nama);
@@ -177,11 +205,9 @@ formTambahan.addEventListener("submit", function(e){
 
   simpanKeFirebase(anakBaru).then(function(){
     pendaftar.anak.push(anakBaru);
-    renderBoard();
 
     /* reset & langsung tanya lagi lewat panel */
     formTambahan.reset();
-    updateLombaNote(formTambahan, "kategori-tambahan", noteTambahan);
     formTambahan.style.display = "none";
     panelTanya.style.display = "block";
     panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -224,10 +250,10 @@ function tampilkanRingkasan(){
 document.getElementById("btn-daftar-baru").addEventListener("click", function(){
   pendaftar.panitia = { nama: "", telpon: "" };
   pendaftar.anak = [];
-  renderBoard();
+  /* papan sengaja tidak disentuh: angkanya milik semua orang, bukan
+     milik sesi ini — memulai pendaftaran baru tidak menolkannya. */
 
   form1.reset();
-  updateLombaNote(form1, "kategori-1", note1);
   panelRingkas.style.display = "none";
   form1.style.display = "block";
   document.getElementById("in-panitia-nama").focus();
@@ -247,14 +273,10 @@ function buatPesanWA(){
       "\nAnak " + (i + 1) + ":\n" +
       "Nama: " + anak.nama + "\n" +
       "Kategori: " + KATEGORI[anak.kategori].label + "\n" +
-      "Lomba: " + anak.lomba + "\n" +
-      "Divisi: " + DIVISI[anak.divisi] + "\n";
+      "Divisi: " + DIVISI[anak.divisi] + "\n" +
+      "No. Orang Tua: " + anak.noOrangTua + "\n";
   });
 
   pesan += "\nMerdeka! 🇮🇩";
   return pesan;
 }
-
-/* set catatan lomba awal sesuai radio default */
-updateLombaNote(form1, "kategori-1", note1);
-updateLombaNote(formTambahan, "kategori-tambahan", noteTambahan);
