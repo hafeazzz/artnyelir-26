@@ -5,11 +5,10 @@
 /* GANTI nomor WhatsApp panitia (format internasional tanpa "+") */
 var WA_PANITIA = "6281286047298";
 
-/* ---------- endpoint Google Sheets (Apps Script Web App) ----------
-   Kosongkan ("") untuk menonaktifkan penyimpanan ke Sheet.
-   Cara mendapatkan URL: lihat SETUP-SHEETS.md — deploy apps-script/Code.gs
-   sebagai Web App, lalu tempel URL yang berakhiran /exec di sini. */
-var SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbycfwK2QAiqbdYGoNVJcsc7u80htR21xrMjgDb5FEipGnPjAzrt565A5oH7D4lB8xn1/exec";
+/* ---------- penyimpanan pendaftaran ----------
+   Data pendaftar dikirim ke Firebase Realtime Database, path /pendaftaran.
+   Konfigurasi Firebase ada di <head> index.html. */
+var FIREBASE_PATH = "pendaftaran";
 
 /* ---------- kategori usia + lomba yang sudah ditentukan ---------- */
 /* Tiap kategori otomatis dapat 1 lomba — peserta tidak memilih lomba. */

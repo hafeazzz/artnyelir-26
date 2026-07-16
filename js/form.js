@@ -9,6 +9,21 @@ var formTambahan = document.getElementById("form-anak-tambahan");
 var panelTanya   = document.getElementById("sukses-anak-pertama");
 var panelRingkas = document.getElementById("ringkasan-akhir");
 
+/* ---------- koneksi Firebase Realtime Database ----------
+   `database` dibuat di <head> index.html. Kalau SDK gagal dimuat (offline,
+   diblokir, config belum diisi), pendaftaranRef = null dan form otomatis
+   jatuh ke mode WhatsApp-only supaya halaman tidak mati total. */
+var pendaftaranRef = null;
+
+(function initFirebase(){
+  if (typeof database === "undefined" || !database){
+    console.warn("[Firebase] SDK/database tidak tersedia — pendaftaran hanya lewat WhatsApp.");
+    return;
+  }
+  pendaftaranRef = database.ref(FIREBASE_PATH);
+  console.log("[Firebase] Terhubung ke path /" + FIREBASE_PATH);
+})();
+
 /* ---------- helper ---------- */
 function isValidPhone(phone){
   return phone.replace(/\D/g, "").length >= 9;
@@ -30,30 +45,44 @@ function radioValue(form, name){
   return el ? el.value : null;
 }
 
-/* ---------- simpan satu anak ke Google Sheets (non-blocking) ----------
-   Tidak menghambat UI: kalau gagal/offline, alur tetap jalan dan
-   konfirmasi WhatsApp tetap jadi sumber data cadangan. Request tetap
-   terkirim ke Apps Script meski respons tidak bisa dibaca (CORS). */
-function kirimKeSheet(anak){
-  if (!SHEET_ENDPOINT) return;   /* fitur dimatikan */
+/* ---------- simpan satu anak ke Firebase ----------
+   Mengembalikan Promise supaya pemanggil bisa menunggu hasilnya sebelum
+   menampilkan panel sukses — jangan bilang "berhasil" sebelum benar tersimpan. */
+function simpanKeFirebase(anak){
+  if (!pendaftaranRef){
+    console.warn("[Firebase] Dilewati — tidak ada koneksi database.");
+    return Promise.resolve(null);
+  }
 
-  var payload = {
-    panitiaNama:   pendaftar.panitia.nama,
-    panitiaTelpon: pendaftar.panitia.telpon,
-    namaAnak:      anak.nama,
-    kategori:      KATEGORI[anak.kategori].label,
-    lomba:         anak.lomba,
-    divisi:        DIVISI[anak.divisi]
+  var data = {
+    waktu:       new Date().toLocaleString("id-ID"),
+    namaPanitia: pendaftar.panitia.nama,
+    noTelepon:   pendaftar.panitia.telpon,
+    namaAnak:    anak.nama,
+    kategori:    KATEGORI[anak.kategori].label,
+    lomba:       anak.lomba,
+    divisi:      DIVISI[anak.divisi]
   };
 
-  fetch(SHEET_ENDPOINT, {
-    method: "POST",
-    /* text/plain = "simple request" → tidak memicu preflight CORS */
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  }).catch(function(err){
-    console.warn("Gagal menyimpan ke Sheet (data tetap ada di ringkasan/WA):", err);
+  console.log("[Firebase] Mengirim data:", data);
+
+  return pendaftaranRef.push(data).then(function(ref){
+    console.log("✅ Data saved — /" + FIREBASE_PATH + "/" + ref.key);
+    return ref;
   });
+}
+
+/* tombol submit: kunci selama proses simpan biar tidak dobel-kirim */
+function kunciTombol(form, sedangKirim){
+  var btn = form.querySelector('button[type="submit"]');
+  if (!btn) return;
+  btn.disabled = sedangKirim;
+  if (sedangKirim){
+    btn.dataset.labelAsli = btn.textContent;
+    btn.textContent = "Menyimpan…";
+  } else if (btn.dataset.labelAsli){
+    btn.textContent = btn.dataset.labelAsli;
+  }
 }
 
 /* update catatan "Lomba: ..." sesuai kategori terpilih */
@@ -89,6 +118,7 @@ form1.addEventListener("submit", function(e){
   if (nama.length < 2)        masalah.push("nama anak");
 
   if (masalah.length){
+    console.warn("[Form] Validasi gagal:", masalah);
     tampilkanError("Lengkapi dulu ya: " + masalah.join(", ") + ".");
     return;
   }
@@ -100,15 +130,24 @@ form1.addEventListener("submit", function(e){
     divisi: divisi,
     lomba: KATEGORI[kategori].lomba
   };
-  pendaftar.anak.push(anakBaru);
 
-  renderBoard();
-  kirimKeSheet(anakBaru);
+  console.log("[Form] Submit anak ke-1:", anakBaru.nama);
+  kunciTombol(form1, true);
 
-  /* tampilkan pertanyaan "ada anak lagi?" */
-  form1.style.display = "none";
-  panelTanya.style.display = "block";
-  panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
+  simpanKeFirebase(anakBaru).then(function(){
+    pendaftar.anak.push(anakBaru);
+    renderBoard();
+
+    /* tampilkan pertanyaan "ada anak lagi?" */
+    form1.style.display = "none";
+    panelTanya.style.display = "block";
+    panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
+  }).catch(function(err){
+    console.error("❌ Gagal menyimpan ke Firebase:", err);
+    tampilkanError("Gagal menyimpan pendaftaran: " + err.message + ". Coba lagi ya.");
+  }).then(function(){
+    kunciTombol(form1, false);
+  });
 });
 
 /* ---------- submit anak tambahan (tanpa data panitia) ---------- */
@@ -121,6 +160,7 @@ formTambahan.addEventListener("submit", function(e){
   var divisi   = radioValue(formTambahan, "divisi-tambahan");
 
   if (nama.length < 2){
+    console.warn("[Form] Validasi gagal: nama anak");
     tampilkanError("Lengkapi dulu ya: nama anak.");
     return;
   }
@@ -131,17 +171,26 @@ formTambahan.addEventListener("submit", function(e){
     divisi: divisi,
     lomba: KATEGORI[kategori].lomba
   };
-  pendaftar.anak.push(anakBaru);
 
-  renderBoard();
-  kirimKeSheet(anakBaru);
+  console.log("[Form] Submit anak ke-" + (pendaftar.anak.length + 1) + ":", anakBaru.nama);
+  kunciTombol(formTambahan, true);
 
-  /* reset & langsung tanya lagi lewat panel */
-  formTambahan.reset();
-  updateLombaNote(formTambahan, "kategori-tambahan", noteTambahan);
-  formTambahan.style.display = "none";
-  panelTanya.style.display = "block";
-  panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
+  simpanKeFirebase(anakBaru).then(function(){
+    pendaftar.anak.push(anakBaru);
+    renderBoard();
+
+    /* reset & langsung tanya lagi lewat panel */
+    formTambahan.reset();
+    updateLombaNote(formTambahan, "kategori-tambahan", noteTambahan);
+    formTambahan.style.display = "none";
+    panelTanya.style.display = "block";
+    panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
+  }).catch(function(err){
+    console.error("❌ Gagal menyimpan ke Firebase:", err);
+    tampilkanError("Gagal menyimpan pendaftaran: " + err.message + ". Coba lagi ya.");
+  }).then(function(){
+    kunciTombol(formTambahan, false);
+  });
 });
 
 /* ---------- "Ya, daftar anak lagi" ---------- */

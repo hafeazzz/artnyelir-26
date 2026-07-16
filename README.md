@@ -16,9 +16,6 @@ artnyelir/
 │   ├── ui.js           # render papan pendaftar & ringkasan
 │   ├── form.js         # validasi & alur pendaftaran multi-anak
 │   └── main.js         # animasi hero/galeri, countdown, init
-├── apps-script/
-│   └── Code.gs         # backend Google Sheets (Apps Script)
-├── SETUP-SHEETS.md     # panduan menyambungkan Google Sheets
 ├── package.json
 ├── vercel.json
 ├── .gitignore
@@ -27,16 +24,32 @@ artnyelir/
 
 ## Yang perlu diganti sebelum dipakai
 
+- **Config Firebase** di `<head>` **`index.html`** — lihat bagian di bawah. **Wajib**, form
+  tidak bisa menyimpan tanpa ini.
 - Nomor WhatsApp panitia: `WA_PANITIA` di **`js/data.js`** dan link di footer `index.html`.
 - Nama & lomba tiap kategori usia: objek `KATEGORI` di **`js/data.js`**.
 - Foto galeri: ganti `<span class="ph-emoji">` dengan `<img src="...">` (lihat komentar di `index.html`).
 
-## Simpan pendaftaran ke Google Sheets (opsional tapi disarankan)
+## Simpan pendaftaran ke Firebase Realtime Database
 
-Setiap anak yang didaftarkan otomatis masuk ke Google Sheet — panitia bisa memantau
-langsung dari spreadsheet. Ikuti **`SETUP-SHEETS.md`**, lalu tempel URL Web App ke
-`SHEET_ENDPOINT` di `js/data.js`. Kalau dibiarkan kosong, penyimpanan mati dan
-konfirmasi cukup lewat WhatsApp.
+Setiap anak yang didaftarkan tersimpan sebagai satu record di path **`/pendaftaran`**.
+
+1. Buat project di <https://console.firebase.google.com> → **Realtime Database** →
+   **Create Database**.
+2. Menu **Project settings → Your apps → Web app** → copy objek `firebaseConfig`.
+3. Tempel ke `firebaseConfig` di `<head>` **`index.html`** (menggantikan placeholder
+   `"AIzaSy..."` dkk). Pastikan `databaseURL` ikut terisi.
+4. Atur **Rules** database. Untuk pendaftaran terbuka (siapa pun boleh menulis, tidak
+   boleh membaca data orang lain):
+
+   ```json
+   { "rules": { "pendaftaran": { ".read": false, ".write": true } } }
+   ```
+
+Catatan: SDK dimuat lewat build **`-compat`** (`firebase-app-compat.js`). Build modular
+tanpa `-compat` tidak membuat global `firebase` dan akan error.
+
+Field yang tersimpan: **waktu, namaPanitia, noTelepon, namaAnak, kategori, lomba, divisi**.
 
 ## Jalankan lokal
 
@@ -56,7 +69,6 @@ vercel --prod    # production
 
 Tidak butuh build step — Vercel menyajikan file statis apa adanya.
 
-> Catatan: tanpa `SHEET_ENDPOINT`, data pendaftar hanya ada di memori browser selama
-> halaman terbuka. Dengan integrasi Google Sheets (lihat `SETUP-SHEETS.md`), setiap
-> pendaftaran tersimpan permanen di spreadsheet. Konfirmasi final tetap dikirim via
+> Catatan: papan pendaftar di halaman hanya membaca memori browser — isinya kosong lagi
+> setelah refresh. Data permanennya ada di Firebase. Konfirmasi final tetap dikirim via
 > link WhatsApp ke panitia sebagai cadangan.
