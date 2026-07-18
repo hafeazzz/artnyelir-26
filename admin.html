@@ -125,7 +125,7 @@
     </header>
 
     <div class="bar">
-      <span class="count">Total: <b id="jml">0</b> anak</span>
+      <span class="count"><b id="jml">0</b> anak · <b id="jml-kk">0</b> keluarga</span>
       <span class="spacer"></span>
       <button class="btn btn-ghost" id="btn-refresh" type="button">🔄 Refresh Data</button>
       <button class="btn btn-primary" id="btn-csv" type="button">📊 Download Data</button>
@@ -137,8 +137,9 @@
       <table>
         <thead>
           <tr>
-            <th>#</th><th>Waktu</th><th>Nama Panitia</th><th>No. Telepon</th>
-            <th>Nama Anak</th><th>Kategori</th><th>No. Orang Tua</th><th>Divisi</th>
+            <th>#</th><th>Waktu</th><th>Nama Anak</th><th>JK</th><th>Usia</th>
+            <th>Orang Tua</th><th>Alamat</th>
+            <th>Panitia</th><th>Usia</th><th>No. HP</th><th>Divisi</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -261,12 +262,33 @@ function pasangListener(){
   });
 }
 
+/* Satu record = satu keluarga dengan array anak. Untuk tabel & CSV kita
+   ratakan jadi satu baris per anak, data orang tua/panitia diulang. */
+function ratakanAnak(){
+  const rows = [];
+  barisTerkini.forEach(function(kel){
+    const anak = Array.isArray(kel.anak) ? kel.anak : [];
+    if (!anak.length){
+      /* keluarga tanpa anak (mestinya tidak terjadi) — tetap tampilkan */
+      rows.push(Object.assign({ _anak: {} }, kel));
+    } else {
+      anak.forEach(function(a){ rows.push(Object.assign({ _anak: a }, kel)); });
+    }
+  });
+  return rows;
+}
+function totalAnak(){
+  return barisTerkini.reduce(function(s, kel){
+    return s + (Array.isArray(kel.anak) ? kel.anak.length : 0);
+  }, 0);
+}
+
 /* Counter publik dinaikkan dari halaman form, jadi bisa melenceng kalau
    ada submit yang push-nya berhasil tapi increment-nya gagal. Halaman ini
    satu-satunya yang boleh membaca /pendaftaran, jadi ia yang mengoreksi:
-   tiap admin membuka halaman, angkanya diselaraskan ke jumlah sebenarnya. */
+   tiap admin membuka halaman, angkanya diselaraskan ke jumlah anak sebenarnya. */
 function selaraskanCounter(){
-  const benar = barisTerkini.length;
+  const benar = totalAnak();
   statistikRef.once("value").then(function(snap){
     if (snap.val() === benar) return;
     console.log("[Admin] Counter melenceng (" + snap.val() + " → " + benar + "), menyelaraskan…");
@@ -290,20 +312,30 @@ function esc(s){
   });
 }
 
+function divisiText(kel){
+  return Array.isArray(kel.divisi) ? kel.divisi.join(", ") : (kel.divisi || "");
+}
+
 function renderTabel(){
-  document.getElementById("jml").textContent = barisTerkini.length;
+  document.getElementById("jml").textContent = totalAnak();
+  document.getElementById("jml-kk").textContent = barisTerkini.length;
   kosongEl.style.display = barisTerkini.length ? "none" : "block";
 
-  tbody.innerHTML = barisTerkini.map(function(r, i){
+  const rows = ratakanAnak();
+  tbody.innerHTML = rows.map(function(r, i){
+    const a = r._anak || {};
     return "<tr>" +
       "<td>" + (i + 1) + "</td>" +
       "<td>" + esc(r.waktu) + "</td>" +
+      "<td>" + esc(a.namaAnak) + "</td>" +
+      "<td>" + esc(a.jenisKelamin) + "</td>" +
+      "<td>" + esc(a.usia) + "</td>" +
+      "<td>" + esc(r.namaOrangTua) + "</td>" +
+      "<td>" + esc(r.alamatOrangTua) + "</td>" +
       "<td>" + esc(r.namaPanitia) + "</td>" +
-      "<td>" + esc(r.noTelepon) + "</td>" +
-      "<td>" + esc(r.namaAnak) + "</td>" +
-      "<td>" + esc(r.kategori) + "</td>" +
-      "<td>" + esc(r.noOrangTua) + "</td>" +
-      "<td>" + esc(r.divisi) + "</td>" +
+      "<td>" + esc(r.usiaPanitia) + "</td>" +
+      "<td>" + esc(r.noHpPanitia) + "</td>" +
+      "<td>" + esc(divisiText(r)) + "</td>" +
     "</tr>";
   }).join("");
 }
@@ -347,16 +379,19 @@ document.getElementById("btn-csv").addEventListener("click", function(){
     alert("Belum ada data untuk diunduh.");
     return;
   }
-  console.log("[Admin] Menyusun CSV:", barisTerkini.length, "baris");
+  const rows = ratakanAnak();
+  console.log("[Admin] Menyusun CSV:", rows.length, "baris anak");
 
-  /* Lomba disembunyikan dari tabel (diumumkan H-hari) tapi tetap ikut di
-     CSV — file ini untuk panitia menyiapkan acara. */
-  const judul = ["Waktu","Nama Panitia","No Telepon","Nama Anak","Kategori","No Orang Tua","Divisi","Lomba"];
-  const baris = barisTerkini.map(function(r){
+  /* Satu baris per anak; data orang tua & panitia diulang. */
+  const judul = ["Waktu","Nama Anak","Jenis Kelamin","Usia Anak",
+                 "Nama Orang Tua","Alamat","Nama Panitia","Usia Panitia","No HP Panitia","Divisi"];
+  const baris = rows.map(function(r){
+    const a = r._anak || {};
     return [
-      selCSV(r.waktu), selCSV(r.namaPanitia), selTelepon(r.noTelepon),
-      selCSV(r.namaAnak), selCSV(r.kategori), selTelepon(r.noOrangTua),
-      selCSV(r.divisi), selCSV(r.lomba)
+      selCSV(r.waktu), selCSV(a.namaAnak), selCSV(a.jenisKelamin), selCSV(a.usia),
+      selCSV(r.namaOrangTua), selCSV(r.alamatOrangTua),
+      selCSV(r.namaPanitia), selCSV(r.usiaPanitia), selTelepon(r.noHpPanitia),
+      selCSV(divisiText(r))
     ].join(",");
   });
 
@@ -394,8 +429,9 @@ document.getElementById("btn-reset").addEventListener("click", function(){
     return;
   }
 
-  const jml = barisTerkini.length;
-  if (!confirm("Yakin hapus SEMUA data?\n\n" + jml + " pendaftaran akan hilang permanen. Aksi ini tidak bisa di-undo.\n\nDisarankan unduh CSV dulu sebagai cadangan.")) return;
+  const jmlKK = barisTerkini.length;
+  const jmlAnak = totalAnak();
+  if (!confirm("Yakin hapus SEMUA data?\n\n" + jmlKK + " keluarga (" + jmlAnak + " anak) akan hilang permanen. Aksi ini tidak bisa di-undo.\n\nDisarankan unduh CSV dulu sebagai cadangan.")) return;
 
   const pass = prompt("Ketik ulang password akun " + user.email + " untuk konfirmasi:");
   if (pass === null) return;          /* user menekan Cancel */
@@ -419,7 +455,7 @@ document.getElementById("btn-reset").addEventListener("click", function(){
     return statistikRef.set(0);
   }).then(function(){
     /* listener .on("value") sudah mengosongkan tabel otomatis */
-    console.log("✅ [Admin] Semua data berhasil dihapus (" + jml + " pendaftaran).");
+    console.log("✅ [Admin] Semua data berhasil dihapus (" + jmlKK + " keluarga, " + jmlAnak + " anak).");
     alert("✅ Semua data berhasil dihapus.");
   }).catch(function(err){
     console.error("❌ [Admin] Reset gagal:", err.code || err.message);

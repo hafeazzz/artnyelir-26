@@ -1,24 +1,18 @@
 /* ============================================================
-   ARTNYELIR '26 — logika form, validasi & alur multi-anak
+   ARTNYELIR '26 — wizard pendaftaran multi-step
+   Alur: orang tua → anak (berulang) → tanya → panitia → ringkasan → sukses
+   Satu keluarga = satu record di Firebase /pendaftaran.
    ============================================================ */
 
-/* elemen dipakai berulang */
-var errEl        = document.getElementById("form-error");
-var form1        = document.getElementById("form-anak-1");
-var formTambahan = document.getElementById("form-anak-tambahan");
-var panelTanya   = document.getElementById("sukses-anak-pertama");
-var panelRingkas = document.getElementById("ringkasan-akhir");
-
 /* ---------- koneksi Firebase Realtime Database ----------
-   `database` dibuat di <head> index.html. Kalau SDK gagal dimuat (offline,
-   diblokir, config belum diisi), pendaftaranRef = null dan form otomatis
-   jatuh ke mode WhatsApp-only supaya halaman tidak mati total. */
+   `database` dibuat di <head> index.html. Kalau SDK gagal dimuat, form
+   tetap bisa diisi sampai step ringkasan; hanya submit yang gagal. */
 var pendaftaranRef = null;
 var statistikRef   = null;
 
 (function initFirebase(){
   if (typeof database === "undefined" || !database){
-    console.warn("[Firebase] SDK/database tidak tersedia — pendaftaran hanya lewat WhatsApp.");
+    console.warn("[Firebase] SDK/database tidak tersedia — submit tidak akan tersimpan.");
     return;
   }
   pendaftaranRef = database.ref(FIREBASE_PATH);
@@ -27,10 +21,10 @@ var statistikRef   = null;
 
   /* Counter realtime. Halaman ini TIDAK boleh membaca /pendaftaran (isinya
      data pribadi, .read butuh login), jadi papan membaca angka dari
-     /statistik/jumlah yang memang publik. */
+     /statistik/jumlah yang memang publik. Angkanya = jumlah anak. */
   statistikRef.on("value", function(snap){
     var jumlah = snap.val();
-    console.log("[Firebase] Counter:", jumlah);
+    console.log("[Firebase] Counter anak:", jumlah);
     renderBoard(typeof jumlah === "number" ? jumlah : 0);
   }, function(err){
     console.error("❌ [Firebase] Gagal membaca counter:", err);
@@ -38,245 +32,323 @@ var statistikRef   = null;
   });
 })();
 
-/* Naikkan counter satu langkah. Transaction supaya dua pendaftaran
-   bersamaan tidak saling menimpa. Sengaja tidak menghambat alur: kalau
-   counter gagal naik, pendaftarannya sendiri sudah aman tersimpan —
-   halaman admin akan menyelaraskan angkanya nanti. */
-function naikkanCounter(){
-  if (!statistikRef) return;
+/* Naikkan counter sebanyak `n` anak. Transaction supaya dua pendaftaran
+   bersamaan tidak saling menimpa. Tidak menghambat alur: kalau gagal,
+   data pendaftaran sendiri sudah aman — halaman admin menyelaraskan nanti. */
+function naikkanCounter(n){
+  if (!statistikRef || !n) return;
   statistikRef.transaction(function(nilai){
-    return (typeof nilai === "number" ? nilai : 0) + 1;
+    return (typeof nilai === "number" ? nilai : 0) + n;
   }).catch(function(err){
     console.warn("[Firebase] Counter gagal naik (data tetap tersimpan):", err);
   });
 }
 
-/* ---------- helper ---------- */
-function isValidPhone(phone){
-  return phone.replace(/\D/g, "").length >= 9;
-}
+/* ---------- elemen & helper ---------- */
+var errEl = document.getElementById("form-error");
+var steps = {};
+document.querySelectorAll(".wz-step").forEach(function(el){
+  steps[el.getAttribute("data-step")] = el;
+});
 
 function tampilkanError(pesan){
   errEl.textContent = pesan;
   errEl.classList.add("show");
-  errEl.scrollIntoView({ block: "center", behavior: "smooth" });
+  errEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+function sembunyikanError(){ errEl.classList.remove("show"); }
+
+function isValidPhone(v){ return v.replace(/\D/g, "").length >= 9; }
+function val(id){ return document.getElementById(id).value.trim(); }
+
+/* ---------- state mesin langkah ----------
+   riwayat menyimpan snapshot {step, anakIndex} tiap kali maju, supaya
+   tombol "Kembali" bisa menelusuri balik alur yang bercabang (loop anak). */
+var state   = { step: "orangtua", anakIndex: 0 };
+var riwayat = [];
+
+/* bobot progress per jenis step (total step dinamis karena anak bisa banyak) */
+var PROGRESS = { orangtua: 15, anak: 35, tanya: 48, panitia: 72, ringkasan: 90, sukses: 100 };
+var LABEL = {
+  orangtua: "Langkah 1 · Data Orang Tua",
+  anak: "Data Anak",
+  tanya: "Konfirmasi",
+  panitia: "Data Panitia",
+  ringkasan: "Ringkasan",
+  sukses: "Selesai"
+};
+
+function render(){
+  Object.keys(steps).forEach(function(k){ steps[k].hidden = (k !== state.step); });
+
+  document.getElementById("wz-bar-fill").style.width = PROGRESS[state.step] + "%";
+  var label = LABEL[state.step];
+  if (state.step === "anak") label = "Data Anak " + (state.anakIndex + 1);
+  document.getElementById("wz-step-label").textContent = label;
+
+  sembunyikanError();
+  if (onEnter[state.step]) onEnter[state.step]();
+
+  var fokus = steps[state.step].querySelector("input, button.btn-primary");
+  if (fokus) try { fokus.focus({ preventScroll: true }); } catch(e){ fokus.focus(); }
+
+  steps[state.step].scrollIntoView({ block: "nearest", behavior: "smooth" });
+  simpanDraft();
 }
 
-function sembunyikanError(){
-  errEl.classList.remove("show");
+/* maju: validasi step sekarang, lalu pindah & catat riwayat */
+function maju(nextStep){
+  if (validasi[state.step] && !validasi[state.step]()) return;
+  riwayat.push({ step: state.step, anakIndex: state.anakIndex });
+  state.step = nextStep;
+  render();
+}
+function mundur(){
+  if (!riwayat.length) return;
+  var prev = riwayat.pop();
+  state.step = prev.step;
+  state.anakIndex = prev.anakIndex;
+  render();
 }
 
-/* nilai radio yang ter-checked di dalam sebuah form */
-function radioValue(form, name){
-  var el = form.querySelector('input[name="' + name + '"]:checked');
-  return el ? el.value : null;
+/* ---------- logika saat MASUK tiap step ---------- */
+var onEnter = {
+  anak: function(){
+    document.getElementById("anak-head").textContent = "Data Anak " + (state.anakIndex + 1);
+    var a = pendaftar.anak[state.anakIndex] || { nama: "", jenisKelamin: "", usia: "" };
+    document.getElementById("in-anak-nama").value = a.nama;
+    document.getElementById("in-anak-usia").value = a.usia;
+    var jk = steps.anak.querySelector('input[name="jk"][value="' + a.jenisKelamin + '"]');
+    steps.anak.querySelectorAll('input[name="jk"]').forEach(function(r){ r.checked = false; });
+    if (jk) jk.checked = true;
+  },
+  tanya: function(){
+    document.getElementById("tanya-head").textContent =
+      "Anak " + (state.anakIndex + 1) + " Tercatat!";
+  },
+  panitia: function(){
+    document.getElementById("in-panitia-nama").value = pendaftar.panitia.nama;
+    document.getElementById("in-panitia-usia").value = pendaftar.panitia.usia;
+    document.getElementById("in-panitia-hp").value   = pendaftar.panitia.noHp;
+    /* selaraskan centang divisi dengan data tersimpan (penting setelah
+       kembali dari ringkasan atau pulih dari draft) */
+    var dipilih = pendaftar.panitia.divisi || [];
+    document.querySelectorAll('#chk-divisi input').forEach(function(c){
+      c.checked = dipilih.indexOf(c.value) !== -1;
+      c.closest(".chk").classList.toggle("on", c.checked);
+    });
+  },
+  ringkasan: function(){ renderReview(); }
+};
+
+/* ---------- validasi per step (return true kalau lolos) ---------- */
+var validasi = {
+  orangtua: function(){
+    var nama = val("in-ortu-nama"), alamat = val("in-ortu-alamat");
+    var m = [];
+    if (nama.length < 2)   m.push("nama orang tua");
+    if (alamat.length < 3) m.push("alamat orang tua");
+    if (m.length){ tampilkanError("Lengkapi dulu: " + m.join(", ") + "."); return false; }
+    pendaftar.orangTua = { nama: nama, alamat: alamat };
+    return true;
+  },
+  anak: function(){
+    var nama = val("in-anak-nama");
+    var jk   = steps.anak.querySelector('input[name="jk"]:checked');
+    var usia = val("in-anak-usia");
+    var m = [];
+    if (nama.length < 2) m.push("nama anak");
+    if (!jk)             m.push("jenis kelamin");
+    if (usia === "" || isNaN(usia) || Number(usia) < 0 || Number(usia) > 17)
+      m.push("usia anak (0–17)");
+    if (m.length){ tampilkanError("Lengkapi dulu: " + m.join(", ") + "."); return false; }
+    /* assignment by index → menambah anak baru ATAU mengedit yang sudah ada */
+    pendaftar.anak[state.anakIndex] = { nama: nama, jenisKelamin: jk.value, usia: usia };
+    console.log("[Form] Anak ke-" + (state.anakIndex + 1) + " tersimpan (sementara):", nama);
+    return true;
+  },
+  panitia: function(){
+    var nama = val("in-panitia-nama"), usia = val("in-panitia-usia"), hp = val("in-panitia-hp");
+    var divisi = [];
+    document.querySelectorAll('#chk-divisi input:checked').forEach(function(c){ divisi.push(c.value); });
+    var m = [];
+    if (nama.length < 2) m.push("nama panitia");
+    if (usia === "" || isNaN(usia)) m.push("usia panitia");
+    if (!isValidPhone(hp)) m.push("nomor HP yang valid");
+    if (!divisi.length) m.push("minimal satu divisi");
+    if (m.length){ tampilkanError("Lengkapi dulu: " + m.join(", ") + "."); return false; }
+    if (Number(usia) < USIA_PANITIA_MIN){
+      tampilkanError("Perwakilan panitia harus berusia minimal " + USIA_PANITIA_MIN + " tahun.");
+      return false;
+    }
+    pendaftar.panitia = { nama: nama, usia: usia, noHp: hp, divisi: divisi };
+    return true;
+  }
+};
+
+/* ---------- render checkbox divisi (dari data.js) ---------- */
+(function isiDivisi(){
+  var wrap = document.getElementById("chk-divisi");
+  wrap.innerHTML = DIVISI_PANITIA.map(function(d){
+    return '<label class="chk"><input type="checkbox" value="' + esc(d) + '" /><span>' + esc(d) + '</span></label>';
+  }).join("");
+  /* highlight kotak saat dicentang */
+  wrap.addEventListener("change", function(e){
+    var lbl = e.target.closest(".chk");
+    if (lbl) lbl.classList.toggle("on", e.target.checked);
+  });
+})();
+
+/* ---------- ringkasan ---------- */
+function renderReview(){
+  var p = pendaftar;
+  var html = "";
+
+  html += '<div class="review-grup"><h4>Orang Tua</h4>' +
+    row("Nama", p.orangTua.nama) + row("Alamat", p.orangTua.alamat) + '</div>';
+
+  html += '<div class="review-grup"><h4>Anak (' + p.anak.length + ')</h4>';
+  p.anak.forEach(function(a, i){
+    html += '<div class="review-anak"><b>' + (i + 1) + '. ' + esc(a.nama) + '</b>' +
+      ' <small>· ' + esc(a.jenisKelamin) + ' · ' + esc(a.usia) + ' th</small></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="review-grup"><h4>Panitia</h4>' +
+    row("Nama", p.panitia.nama) +
+    row("Usia", p.panitia.usia + " tahun") +
+    row("No. HP", p.panitia.noHp) +
+    row("Divisi", p.panitia.divisi.join(", ")) + '</div>';
+
+  document.getElementById("review").innerHTML = html;
+}
+function row(dt, dd){
+  return '<div class="review-row"><dt>' + esc(dt) + '</dt><dd>' + esc(dd) + '</dd></div>';
 }
 
-/* ---------- simpan satu anak ke Firebase ----------
-   Mengembalikan Promise supaya pemanggil bisa menunggu hasilnya sebelum
-   menampilkan panel sukses — jangan bilang "berhasil" sebelum benar tersimpan. */
-function simpanKeFirebase(anak){
+/* ---------- cadangan draft di localStorage ----------
+   Kalau user tidak sengaja refresh sebelum submit, isian tidak hilang. */
+function simpanDraft(){
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ pendaftar: pendaftar, state: state, riwayat: riwayat }));
+  } catch(e){ /* storage penuh / diblokir — abaikan, bukan fitur wajib */ }
+}
+function hapusDraft(){
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+}
+function pulihkanDraft(){
+  var raw;
+  try { raw = localStorage.getItem(DRAFT_KEY); } catch(e){ return false; }
+  if (!raw) return false;
+  var d;
+  try { d = JSON.parse(raw); } catch(e){ hapusDraft(); return false; }
+  if (!d || !d.pendaftar || d.state.step === "sukses") { hapusDraft(); return false; }
+  var adaIsi = d.pendaftar.orangTua.nama || d.pendaftar.anak.length;
+  if (!adaIsi) return false;
+  if (!confirm("Ada pengisian yang belum selesai. Lanjutkan dari sebelumnya?")){
+    hapusDraft();
+    return false;
+  }
+  pendaftar = d.pendaftar;
+  state = d.state;
+  riwayat = d.riwayat || [];
+  return true;
+}
+
+/* ---------- tombol navigasi generik ---------- */
+document.querySelectorAll("[data-maju]").forEach(function(btn){
+  /* step orangtua & anak: "Lanjut" menuju step logis berikutnya */
+  btn.addEventListener("click", function(){
+    if (state.step === "orangtua") maju("anak");
+    else if (state.step === "anak") maju("tanya");
+  });
+});
+document.querySelectorAll("[data-mundur]").forEach(function(btn){
+  btn.addEventListener("click", mundur);
+});
+
+/* step tanya: tambah anak / lanjut ke panitia */
+document.getElementById("btn-tambah-anak").addEventListener("click", function(){
+  riwayat.push({ step: state.step, anakIndex: state.anakIndex });
+  state.anakIndex += 1;
+  state.step = "anak";
+  render();
+});
+document.getElementById("btn-selesai-anak").addEventListener("click", function(){
+  riwayat.push({ step: state.step, anakIndex: state.anakIndex });
+  state.step = "panitia";
+  render();
+});
+
+/* step panitia → ringkasan */
+document.getElementById("btn-ke-ringkasan").addEventListener("click", function(){
+  maju("ringkasan");
+});
+
+/* ---------- submit final ---------- */
+document.getElementById("btn-kirim").addEventListener("click", function(){
+  var btn = this;
+  sembunyikanError();
+
+  var record = {
+    waktu:          new Date().toLocaleString("id-ID"),
+    namaOrangTua:   pendaftar.orangTua.nama,
+    alamatOrangTua: pendaftar.orangTua.alamat,
+    anak:           pendaftar.anak.map(function(a){
+      return { namaAnak: a.nama, jenisKelamin: a.jenisKelamin, usia: a.usia };
+    }),
+    namaPanitia:    pendaftar.panitia.nama,
+    usiaPanitia:    pendaftar.panitia.usia,
+    noHpPanitia:    pendaftar.panitia.noHp,
+    divisi:         pendaftar.panitia.divisi
+  };
+
   if (!pendaftaranRef){
-    console.warn("[Firebase] Dilewati — tidak ada koneksi database.");
-    return Promise.resolve(null);
+    tampilkanError("Koneksi database tidak tersedia. Cek internet lalu coba lagi.");
+    return;
   }
 
-  var data = {
-    waktu:       new Date().toLocaleString("id-ID"),
-    namaPanitia: pendaftar.panitia.nama,
-    noTelepon:   pendaftar.panitia.telpon,
-    namaAnak:    anak.nama,
-    kategori:    KATEGORI[anak.kategori].label,
-    lomba:       anak.lomba,
-    divisi:      DIVISI[anak.divisi],
-    noOrangTua:  anak.noOrangTua
-  };
+  btn.disabled = true;
+  btn.textContent = "Mengirim…";
+  console.log("[Firebase] Mengirim pendaftaran keluarga:", record);
 
-  console.log("[Firebase] Mengirim data:", data);
-
-  return pendaftaranRef.push(data).then(function(ref){
+  pendaftaranRef.push(record).then(function(ref){
     console.log("✅ Data saved — /" + FIREBASE_PATH + "/" + ref.key);
-    naikkanCounter();
-    return ref;
-  });
-}
-
-/* tombol submit: kunci selama proses simpan biar tidak dobel-kirim */
-function kunciTombol(form, sedangKirim){
-  var btn = form.querySelector('button[type="submit"]');
-  if (!btn) return;
-  btn.disabled = sedangKirim;
-  if (sedangKirim){
-    btn.dataset.labelAsli = btn.textContent;
-    btn.textContent = "Menyimpan…";
-  } else if (btn.dataset.labelAsli){
-    btn.textContent = btn.dataset.labelAsli;
-  }
-}
-
-/* Nama lomba tiap kategori sengaja TIDAK ditampilkan di halaman publik —
-   diumumkan panitia pada hari-H. Nilainya tetap ikut tersimpan ke Firebase
-   dan muncul di CSV admin supaya panitia bisa menyiapkan acara. */
-
-/* ---------- submit anak pertama (dengan data panitia) ---------- */
-form1.addEventListener("submit", function(e){
-  e.preventDefault();
-  sembunyikanError();
-
-  var panitia  = document.getElementById("in-panitia-nama").value.trim();
-  var telpon   = document.getElementById("in-panitia-telpon").value.trim();
-  var nama     = document.getElementById("in-nama-anak-1").value.trim();
-  var ortu     = document.getElementById("in-ortu-telpon-1").value.trim();
-  var kategori = radioValue(form1, "kategori-1");
-  var divisi   = radioValue(form1, "divisi-1");
-
-  var masalah = [];
-  if (panitia.length < 2)     masalah.push("nama panitia");
-  if (!isValidPhone(telpon))  masalah.push("nomor telepon panitia yang valid");
-  if (nama.length < 2)        masalah.push("nama anak");
-  if (!isValidPhone(ortu))    masalah.push("nomor orang tua yang valid");
-
-  if (masalah.length){
-    console.warn("[Form] Validasi gagal:", masalah);
-    tampilkanError("Lengkapi dulu ya: " + masalah.join(", ") + ".");
-    return;
-  }
-
-  pendaftar.panitia = { nama: panitia, telpon: telpon };
-  var anakBaru = {
-    nama: nama,
-    kategori: kategori,
-    divisi: divisi,
-    lomba: KATEGORI[kategori].lomba,
-    noOrangTua: ortu
-  };
-
-  console.log("[Form] Submit anak ke-1:", anakBaru.nama);
-  kunciTombol(form1, true);
-
-  simpanKeFirebase(anakBaru).then(function(){
-    pendaftar.anak.push(anakBaru);
-    /* papan tidak di-render di sini — listener /statistik/jumlah yang
-       memperbaruinya, dan itu jalan untuk semua pengunjung, bukan cuma
-       yang baru submit. */
-
-    /* tampilkan pertanyaan "ada anak lagi?" */
-    form1.style.display = "none";
-    panelTanya.style.display = "block";
-    panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
+    naikkanCounter(record.anak.length);
+    hapusDraft();
+    document.getElementById("sukses-detail").textContent =
+      record.anak.length + " anak dari keluarga " + record.namaOrangTua +
+      " berhasil didaftarkan. Sampai jumpa di lapangan — Merdeka! 🇮🇩";
+    /* reset state supaya draft/keluarga berikutnya bersih */
+    riwayat = [];
+    state = { step: "sukses", anakIndex: 0 };
+    render();
   }).catch(function(err){
     console.error("❌ Gagal menyimpan ke Firebase:", err);
-    tampilkanError("Gagal menyimpan pendaftaran: " + err.message + ". Coba lagi ya.");
-  }).then(function(){
-    kunciTombol(form1, false);
+    tampilkanError("Gagal mengirim: " + err.message + ". Coba lagi ya.");
+    btn.disabled = false;
+    btn.textContent = "Kirim Sekarang 🎉";
   });
 });
 
-/* ---------- submit anak tambahan (tanpa data panitia) ---------- */
-formTambahan.addEventListener("submit", function(e){
-  e.preventDefault();
-  sembunyikanError();
-
-  var nama     = document.getElementById("in-nama-anak-tambahan").value.trim();
-  var ortu     = document.getElementById("in-ortu-telpon-tambahan").value.trim();
-  var kategori = radioValue(formTambahan, "kategori-tambahan");
-  var divisi   = radioValue(formTambahan, "divisi-tambahan");
-
-  var masalah = [];
-  if (nama.length < 2)      masalah.push("nama anak");
-  if (!isValidPhone(ortu))  masalah.push("nomor orang tua yang valid");
-
-  if (masalah.length){
-    console.warn("[Form] Validasi gagal:", masalah);
-    tampilkanError("Lengkapi dulu ya: " + masalah.join(", ") + ".");
-    return;
-  }
-
-  var anakBaru = {
-    nama: nama,
-    kategori: kategori,
-    divisi: divisi,
-    lomba: KATEGORI[kategori].lomba,
-    noOrangTua: ortu
-  };
-
-  console.log("[Form] Submit anak ke-" + (pendaftar.anak.length + 1) + ":", anakBaru.nama);
-  kunciTombol(formTambahan, true);
-
-  simpanKeFirebase(anakBaru).then(function(){
-    pendaftar.anak.push(anakBaru);
-
-    /* reset & langsung tanya lagi lewat panel */
-    formTambahan.reset();
-    formTambahan.style.display = "none";
-    panelTanya.style.display = "block";
-    panelTanya.scrollIntoView({ block: "center", behavior: "smooth" });
-  }).catch(function(err){
-    console.error("❌ Gagal menyimpan ke Firebase:", err);
-    tampilkanError("Gagal menyimpan pendaftaran: " + err.message + ". Coba lagi ya.");
-  }).then(function(){
-    kunciTombol(formTambahan, false);
-  });
-});
-
-/* ---------- "Ya, daftar anak lagi" ---------- */
-document.getElementById("btn-anak-lagi").addEventListener("click", function(){
-  panelTanya.style.display = "none";
-  formTambahan.style.display = "block";
-  document.getElementById("in-nama-anak-tambahan").focus();
-});
-
-/* ---------- "Tidak, lihat ringkasan" ---------- */
-document.getElementById("btn-lihat-ringkasan").addEventListener("click", tampilkanRingkasan);
-
-/* ---------- "Selesai pendaftaran" dari form tambahan ---------- */
-document.getElementById("btn-selesai").addEventListener("click", tampilkanRingkasan);
-
-function tampilkanRingkasan(){
-  panelTanya.style.display = "none";
-  formTambahan.style.display = "none";
-  panelRingkas.style.display = "block";
-
-  renderRingkasan();
-
-  var pesan = buatPesanWA();
-  document.getElementById("btn-wa-akhir").href =
-    "https://wa.me/" + WA_PANITIA + "?text=" + encodeURIComponent(pesan);
-
-  panelRingkas.scrollIntoView({ block: "center", behavior: "smooth" });
-}
-
-/* ---------- "Pendaftaran baru" — mulai dari nol ---------- */
+/* ---------- "Daftarkan Keluarga Lain" ---------- */
 document.getElementById("btn-daftar-baru").addEventListener("click", function(){
-  pendaftar.panitia = { nama: "", telpon: "" };
-  pendaftar.anak = [];
-  /* papan sengaja tidak disentuh: angkanya milik semua orang, bukan
-     milik sesi ini — memulai pendaftaran baru tidak menolkannya. */
-
-  form1.reset();
-  panelRingkas.style.display = "none";
-  form1.style.display = "block";
-  document.getElementById("in-panitia-nama").focus();
+  pendaftar = {
+    orangTua: { nama: "", alamat: "" },
+    anak: [],
+    panitia: { nama: "", usia: "", noHp: "", divisi: [] }
+  };
+  riwayat = [];
+  state = { step: "orangtua", anakIndex: 0 };
+  document.getElementById("in-ortu-nama").value = "";
+  document.getElementById("in-ortu-alamat").value = "";
+  document.querySelectorAll('#chk-divisi input').forEach(function(c){
+    c.checked = false; c.closest(".chk").classList.remove("on");
+  });
+  hapusDraft();
+  render();
 });
 
-/* ---------- rakit pesan WhatsApp ---------- */
-function buatPesanWA(){
-  var pesan =
-    "Halo Panitia ARTNYELIR 🙏\n" +
-    "Saya mau daftar lomba 17an:\n\n" +
-    "Panitia yang Diajukan: " + pendaftar.panitia.nama + "\n" +
-    "No. Telepon: " + pendaftar.panitia.telpon + "\n\n" +
-    "--- DATA ANAK ---\n";
-
-  pendaftar.anak.forEach(function(anak, i){
-    pesan +=
-      "\nAnak " + (i + 1) + ":\n" +
-      "Nama: " + anak.nama + "\n" +
-      "Kategori: " + KATEGORI[anak.kategori].label + "\n" +
-      "Divisi: " + DIVISI[anak.divisi] + "\n" +
-      "No. Orang Tua: " + anak.noOrangTua + "\n";
-  });
-
-  pesan += "\nMerdeka! 🇮🇩";
-  return pesan;
-}
+/* ---------- mulai ---------- */
+pulihkanDraft();
+render();

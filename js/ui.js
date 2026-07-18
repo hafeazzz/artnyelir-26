@@ -34,21 +34,5 @@ function renderBoard(jumlah){
     : "Ayo daftarkan anakmu juga! 🇮🇩";
 }
 
-/* ---------- ringkasan akhir: panitia + daftar semua anak ---------- */
-function renderRingkasan(){
-  document.getElementById("ringkasan-panitia").textContent = pendaftar.panitia.nama;
-  document.getElementById("ringkasan-telpon").textContent  = pendaftar.panitia.telpon;
-
-  var list = document.getElementById("ringkasan-list");
-  var html = "";
-  pendaftar.anak.forEach(function(anak, i){
-    html +=
-      '<li>' +
-        '<strong>Anak ' + (i + 1) + ':</strong> ' + esc(anak.nama) +
-        ' — ' + esc(KATEGORI[anak.kategori].label) +
-        '<small>' + esc(DIVISI[anak.divisi]) +
-        ' · ortu: ' + esc(anak.noOrangTua) + '</small>' +
-      '</li>';
-  });
-  list.innerHTML = html;
-}
+/* Ringkasan pendaftaran kini bagian dari wizard (step "ringkasan") dan
+   dirender di form.js, karena strukturnya sudah pindah ke model keluarga. */

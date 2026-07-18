@@ -208,128 +208,147 @@
     <div class="sec-head">
       <p class="eyebrow"><span class="mini-flag"></span> Pendaftaran Dibuka</p>
       <h2 class="h2">Daftar Sekarang</h2>
-      <p class="sub">Pendaftaran terbuka untuk anak berusia 1–12 tahun. Setiap kategori usia sudah punya lomba khusus (tinggal isi data, satu keluarga bisa mendaftarkan beberapa anak sekaligus dengan syarat mengajukan panitia juga)</p>
+      <p class="sub">Isi langkah demi langkah — data orang tua, anak-anak yang didaftarkan, lalu perwakilan panitia dari rumah. Satu keluarga cukup mengisi sekali.</p>
     </div>
 
     <div class="daftar-grid">
 
-      <!-- ---------- KARTU FORM ---------- -->
-      <div class="card">
+      <!-- ---------- KARTU FORM (WIZARD) ---------- -->
+      <div class="card wz-card">
+
+        <!-- progress -->
+        <div class="wz-progress" aria-hidden="true">
+          <div class="wz-bar"><div class="wz-bar-fill" id="wz-bar-fill"></div></div>
+          <p class="wz-step-label" id="wz-step-label">Langkah 1</p>
+        </div>
 
         <div class="form-error" id="form-error" role="alert"></div>
 
-        <!-- FORM ANAK PERTAMA (dengan data panitia) -->
-        <form id="form-anak-1" class="form-anak" novalidate>
-          <h3 class="form-heading">Data Panitia yang diajukan</h3>
-          <p class="form-desc">Per rumah wajib mengirimkan satu panitia jika ingin mendaftarkan anaknya lomba (umur panitia bisa mulai dari 12 keatas)</p>
+        <!-- STEP 1: DATA ORANG TUA -->
+        <section class="wz-step" data-step="orangtua">
+          <h3 class="wz-q-head">Data Orang Tua</h3>
+          <p class="wz-q-desc">Data penanggung jawab keluarga yang mendaftarkan anak.</p>
 
-          <div class="field">
-            <label for="in-panitia-nama">Nama Panitia yang Diajukan *</label>
-            <input id="in-panitia-nama" type="text" placeholder="cth: Ibu Siti Nurhaliza" autocomplete="name" required />
+          <div class="q">
+            <label class="q-label" for="in-ortu-nama">Nama Orang Tua *</label>
+            <input class="q-input" id="in-ortu-nama" type="text" placeholder="Nama lengkap" autocomplete="name" />
+          </div>
+          <div class="q">
+            <label class="q-label" for="in-ortu-alamat">Alamat Orang Tua *</label>
+            <input class="q-input" id="in-ortu-alamat" type="text" placeholder="cth: Blok C No. 12" autocomplete="street-address" />
           </div>
 
-          <div class="field">
-            <label for="in-panitia-telpon">No. Telepon Panitia (WhatsApp) *</label>
-            <input id="in-panitia-telpon" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
+          <div class="wz-nav">
+            <span></span>
+            <button class="btn btn-primary" type="button" data-maju>Lanjut →</button>
+          </div>
+        </section>
+
+        <!-- STEP 2: DATA ANAK (dipakai ulang untuk tiap anak) -->
+        <section class="wz-step" data-step="anak" hidden>
+          <h3 class="wz-q-head" id="anak-head">Data Anak 1</h3>
+          <p class="wz-q-desc">Data anak yang akan mengikuti Lomba Anak.</p>
+
+          <div class="q">
+            <label class="q-label" for="in-anak-nama">Nama Anak *</label>
+            <input class="q-input" id="in-anak-nama" type="text" placeholder="Nama lengkap anak" />
           </div>
 
-          <fieldset>
-            <legend>Divisi / Departemen yang Diinginkan (disarankan jika panitia berumur dibawah 20 memilih divisi lomba) </legend>
-            <div class="pills" id="pills-divisi-1">
-              <label class="pill"><input type="radio" name="divisi-1" value="konsumsi" checked /><span>🍽️ Konsumsi</span></label>
-              <label class="pill"><input type="radio" name="divisi-1" value="dokumentasi" /><span>📸 Dokumentasi</span></label>
-              <label class="pill"><input type="radio" name="divisi-1" value="lomba" /><span>🏆 Lomba</span></label>
+          <div class="q">
+            <span class="q-label">Jenis Kelamin *</span>
+            <div class="seg" id="seg-jk">
+              <label class="seg-opt"><input type="radio" name="jk" value="Laki-laki" /><span>👦 Laki-laki</span></label>
+              <label class="seg-opt"><input type="radio" name="jk" value="Perempuan" /><span>👧 Perempuan</span></label>
             </div>
-          </fieldset>
-
-          <hr class="form-sep" />
-
-          <h3 class="form-heading">Data Peserta — Anak Ke-1</h3>
-          <p class="form-desc">Isi data anak yang akan mengikuti lomba.</p>
-
-          <div class="field">
-            <label for="in-nama-anak-1">Nama Anak *</label>
-            <input id="in-nama-anak-1" type="text" placeholder="Nama lengkap anak" required />
           </div>
 
-          <fieldset>
-            <legend>Kategori Usia *</legend>
-            <div class="pills" id="pills-kategori-1">
-              <label class="pill"><input type="radio" name="kategori-1" value="1-3" checked /><span>1–3 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-1" value="4-6" /><span>4–6 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-1" value="7-9" /><span>7–9 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-1" value="10-12" /><span>10–12 Tahun</span></label>
+          <div class="q">
+            <label class="q-label" for="in-anak-usia">Usia Anak *</label>
+            <input class="q-input q-input-sm" id="in-anak-usia" type="number" inputmode="numeric" min="0" max="17" placeholder="cth: 8" />
+            <span class="q-suffix">tahun</span>
+          </div>
+
+          <div class="wz-nav">
+            <button class="btn btn-ghost" type="button" data-mundur>← Kembali</button>
+            <button class="btn btn-primary" type="button" data-maju>Lanjut →</button>
+          </div>
+        </section>
+
+        <!-- STEP 3: KONFIRMASI ANAK TAMBAHAN -->
+        <section class="wz-step" data-step="tanya" hidden>
+          <div class="wz-check">✓</div>
+          <h3 class="wz-q-head wz-center" id="tanya-head">Anak Tercatat!</h3>
+          <p class="wz-q-desc wz-center">Apakah ada anak lain yang ingin didaftarkan?</p>
+
+          <div class="wz-nav wz-nav-stack">
+            <button class="btn btn-primary" type="button" id="btn-tambah-anak">+ Ya, tambah anak</button>
+            <button class="btn btn-ghost" type="button" id="btn-selesai-anak">Tidak, lanjutkan →</button>
+          </div>
+          <div class="wz-nav">
+            <button class="btn btn-link" type="button" data-mundur>← Kembali</button>
+            <span></span>
+          </div>
+        </section>
+
+        <!-- STEP 4: DATA PANITIA -->
+        <section class="wz-step" data-step="panitia" hidden>
+          <div class="info-box">
+            <span class="info-ico">ℹ️</span>
+            <div>
+              <p>Agar seluruh rangkaian perayaan ARTNYELIR 2026 berjalan lancar, panitia memberlakukan sistem kontribusi keluarga. Setiap rumah yang mendaftarkan anaknya untuk Lomba Anak <strong>wajib mengirimkan minimal 1 (satu) orang perwakilan</strong> dari rumah tersebut untuk menjadi panitia. Perwakilan panitia dari rumah berusia mulai dari <strong>13 tahun ke atas</strong>.</p>
+              <p>Pilihan divisi kepanitiaan sangat fleksibel dan diperbolehkan memilih lebih dari satu divisi.</p>
             </div>
-          </fieldset>
-          <p class="usia-note">Lomba untuk tiap kategori diumumkan pada hari-H 🤫</p>
-
-          <div class="field">
-            <label for="in-ortu-telpon-1">Nomor Orang Tua (WhatsApp) *</label>
-            <input id="in-ortu-telpon-1" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
           </div>
 
-          <button class="btn btn-primary btn-submit" type="submit">Daftar Anak Ini 🎉</button>
-        </form>
+          <h3 class="wz-q-head">Data Panitia</h3>
 
-        <!-- FORM ANAK BERIKUTNYA (tanpa data panitia) -->
-        <form id="form-anak-tambahan" class="form-anak" style="display:none" novalidate>
-          <h3 class="form-heading">Data Peserta — Anak Berikutnya</h3>
-          <p class="form-desc">Isi data anak tambahan. Data panitia tidak perlu diisi lagi.</p>
-
-
-          <div class="field">
-            <label for="in-nama-anak-tambahan">Nama Anak *</label>
-            <input id="in-nama-anak-tambahan" type="text" placeholder="Nama lengkap anak" required />
+          <div class="q">
+            <label class="q-label" for="in-panitia-nama">Nama Panitia *</label>
+            <input class="q-input" id="in-panitia-nama" type="text" placeholder="Nama lengkap perwakilan" autocomplete="name" />
+          </div>
+          <div class="q">
+            <label class="q-label" for="in-panitia-usia">Usia *</label>
+            <input class="q-input q-input-sm" id="in-panitia-usia" type="number" inputmode="numeric" min="13" max="99" placeholder="cth: 21" />
+            <span class="q-suffix">tahun</span>
+          </div>
+          <div class="q">
+            <label class="q-label" for="in-panitia-hp">Nomor HP (WhatsApp) *</label>
+            <input class="q-input" id="in-panitia-hp" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" />
           </div>
 
-          <fieldset>
-            <legend>Kategori Usia *</legend>
-            <div class="pills" id="pills-kategori-tambahan">
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="1-3" checked /><span>1–3 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="4-6" /><span>4–6 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="7-9" /><span>7–9 Tahun</span></label>
-              <label class="pill"><input type="radio" name="kategori-tambahan" value="10-12" /><span>10–12 Tahun</span></label>
-            </div>
-          </fieldset>
-          <p class="usia-note">Lomba untuk tiap kategori diumumkan pada hari-H 🤫</p>
-
-          <div class="field">
-            <label for="in-ortu-telpon-tambahan">Nomor Orang Tua (WhatsApp) *</label>
-            <input id="in-ortu-telpon-tambahan" type="tel" placeholder="cth: 0812 3456 7890" autocomplete="tel" required />
+          <div class="q">
+            <span class="q-label">Divisi yang Diinginkan * <em class="q-hint">(boleh pilih lebih dari satu)</em></span>
+            <div class="chk-group" id="chk-divisi"></div>
           </div>
 
-          <div class="btn-row">
-            <button class="btn btn-primary" type="submit">Daftar Anak Ini</button>
-            <button class="btn btn-ghost" id="btn-selesai" type="button">Selesai Pendaftaran</button>
+          <div class="wz-nav">
+            <button class="btn btn-ghost" type="button" data-mundur>← Kembali</button>
+            <button class="btn btn-primary" type="button" id="btn-ke-ringkasan">Lihat Ringkasan →</button>
           </div>
-        </form>
+        </section>
 
-        <!-- PANEL: ada anak lagi? -->
-        <div class="multi-q" id="sukses-anak-pertama" style="display:none" aria-live="polite">
-          <div class="sukses-check">✓</div>
-          <h3>Anak Berhasil Didaftarkan!</h3>
-          <p class="hint">Ada anak lagi yang ingin didaftarkan?</p>
-          <div class="btn-row btn-row-center">
-            <button class="btn btn-primary" id="btn-anak-lagi" type="button">Ya, Daftar Anak Lagi</button>
-            <button class="btn btn-ghost" id="btn-lihat-ringkasan" type="button">Tidak, Lihat Ringkasan</button>
-          </div>
-        </div>
+        <!-- STEP 5: RINGKASAN -->
+        <section class="wz-step" data-step="ringkasan" hidden>
+          <h3 class="wz-q-head">Ringkasan Pendaftaran</h3>
+          <p class="wz-q-desc">Periksa sekali lagi sebelum dikirim.</p>
 
-        <!-- PANEL: ringkasan akhir -->
-        <div class="ringkasan" id="ringkasan-akhir" style="display:none" aria-live="polite">
-          <div class="sukses-check">🎉</div>
-          <h3>Ringkasan Pendaftaran</h3>
-          <dl class="sukses-detail">
-            <div><dt>Panitia</dt><dd id="ringkasan-panitia"></dd></div>
-            <div><dt>No. Telepon</dt><dd id="ringkasan-telpon"></dd></div>
-          </dl>
-          <h4 class="ringkasan-sub">Anak-anak yang Terdaftar</h4>
-          <ul class="ringkasan-list" id="ringkasan-list"></ul>
-          <div class="sukses-cta">
-            <a class="btn btn-primary" id="btn-wa-akhir" href="#" target="_blank" rel="noopener">Konfirmasi via WhatsApp</a>
-            <button class="btn btn-ghost" id="btn-daftar-baru" type="button">Pendaftaran Baru</button>
+          <div class="review" id="review"></div>
+
+          <div class="wz-nav">
+            <button class="btn btn-ghost" type="button" data-mundur>← Kembali Edit</button>
+            <button class="btn btn-primary" type="button" id="btn-kirim">Kirim Sekarang 🎉</button>
           </div>
-        </div>
+        </section>
+
+        <!-- STEP 6: SUKSES -->
+        <section class="wz-step" data-step="sukses" hidden>
+          <div class="wz-check wz-check-lg">🎉</div>
+          <h3 class="wz-q-head wz-center">Pendaftaran Terkirim!</h3>
+          <p class="wz-q-desc wz-center" id="sukses-detail">Terima kasih sudah mendaftar. Sampai jumpa di lapangan — Merdeka! 🇮🇩</p>
+          <div class="wz-nav wz-nav-stack">
+            <button class="btn btn-primary" type="button" id="btn-daftar-baru">Daftarkan Keluarga Lain</button>
+          </div>
+        </section>
 
       </div>
 

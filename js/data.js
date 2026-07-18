@@ -6,36 +6,31 @@
 var WA_PANITIA = "6281286047298";
 
 /* ---------- penyimpanan pendaftaran ----------
-   Data pendaftar dikirim ke Firebase Realtime Database, path /pendaftaran.
+   Satu record = satu keluarga (orang tua + daftar anak + satu panitia).
+   Dikirim ke Firebase Realtime Database, path /pendaftaran.
    Konfigurasi Firebase ada di <head> index.html. */
 var FIREBASE_PATH = "pendaftaran";
 
 /* ---------- counter publik ----------
-   /pendaftaran hanya bisa dibaca setelah login (isinya nama anak & nomor
-   telepon), jadi papan di halaman publik tidak boleh membacanya. Sebagai
-   gantinya jumlahnya disimpan terpisah di sini: angka telanjang, tanpa
-   data pribadi, aman dibaca siapa pun. */
+   /pendaftaran hanya bisa dibaca setelah login (isinya data pribadi),
+   jadi papan di halaman publik tidak boleh membacanya. Jumlah anak
+   disimpan terpisah di sini: angka telanjang, aman dibaca siapa pun. */
 var STATISTIK_PATH = "statistik/jumlah";
 
-/* ---------- kategori usia + lomba yang sudah ditentukan ---------- */
-/* Tiap kategori otomatis dapat 1 lomba — peserta tidak memilih lomba. */
-var KATEGORI = {
-  "1-3":   { label: "1–3 Tahun (Balita)",      lomba: "Lomba Jalan Estafet Balita" },
-  "4-6":   { label: "4–6 Tahun (TK/SD Awal)",  lomba: "Lomba Lari Cepat" },
-  "7-9":   { label: "7–9 Tahun (SD)",          lomba: "Lomba Tarik Tambang" },
-  "10-12": { label: "10–12 Tahun (Pra-remaja)", lomba: "Lomba Balap Karung" }
-};
+/* ---------- pilihan divisi panitia (multi-select) ----------
+   Nilai yang tersimpan ke Firebase persis string di array ini. */
+var DIVISI_PANITIA = ["Konsumsi", "Dokumentasi", "Crew Lomba", "Bebas Aja"];
 
-/* ---------- pilihan divisi ---------- */
-var DIVISI = {
-  "konsumsi":    "🍽️ Konsumsi (Makanan & Minuman)",
-  "dokumentasi": "📸 Dokumentasi (Foto & Video)",
-  "lomba":       "🏆 Lomba (Dewasa & Anak-anak)"
-};
+/* usia minimal perwakilan panitia dari tiap rumah */
+var USIA_PANITIA_MIN = 13;
 
-/* ---------- data pendaftar (disimpan di memori selama halaman terbuka) ----------
-   Satu panitia/keluarga bisa mendaftarkan beberapa anak. */
+/* kunci localStorage untuk cadangan progres pengisian */
+var DRAFT_KEY = "artnyelir26-draft";
+
+/* ---------- data pendaftar (di memori selama halaman terbuka) ----------
+   Satu keluarga: satu orang tua, beberapa anak, satu panitia. */
 var pendaftar = {
-  panitia: { nama: "", telpon: "" },
-  anak: []   /* { nama, kategori, divisi, lomba, noOrangTua } */
+  orangTua: { nama: "", alamat: "" },
+  anak: [],   /* { nama, jenisKelamin, usia } */
+  panitia: { nama: "", usia: "", noHp: "", divisi: [] }
 };
